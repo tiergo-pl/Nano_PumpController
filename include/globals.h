@@ -1,0 +1,44 @@
+#ifndef _globals_h_
+#define _globals_h_
+
+#include <stdint.h>
+//-----------------------------
+// macros and vars used in software clock
+// remember [extern] statement
+extern volatile uint32_t mainClock_us; //Software timer incremented by hw timer interrupt
+extern volatile uint32_t mainClock_us_temp; //Copy of sw timer used in calculations
+extern volatile uint32_t clk1;
+extern volatile uint32_t clk2;
+extern volatile uint32_t clk3;
+extern volatile uint32_t clkBuzzer; // buzzer tone generation
+#define MAIN_CLOCK_TICK 10 // 1 tick of mainClock_us duration in microseconds (max 128 due to hw limitations)
+// set following values in microsecs.:
+//#define interval1 500000 / MAIN_CLOCK_TICK     //use macro for constant OR:
+//uint32_t interval1 = 500000 / MAIN_CLOCK_TICK; //use variable for mutable value OR:
+extern volatile uint32_t interval1;                        //use variable for mutable value readable from eeprom
+extern uint32_t *saved_interval1; //and pointer to its saved value
+//#define interval2 1000000 / MAIN_CLOCK_TICK
+//#define interval3 55500 / MAIN_CLOCK_TICK
+extern volatile uint32_t interval2;                        //use variable for mutable value readable from eeprom
+extern uint32_t *saved_interval2; //and pointer to its saved value
+extern volatile uint32_t interval3;                        //use variable for mutable value readable from eeprom
+extern uint32_t *saved_interval3; //and pointer to its saved value
+extern volatile uint32_t intervalBuzzer; // buzzer tone generation
+extern uint32_t *saved_intervalBuzzer;
+#define SEQUENCE1_SIZE 0x60
+#define SEQUENCE2_SIZE 0x60
+extern uint8_t sequence1[SEQUENCE1_SIZE]; // array of pwm walues
+extern uint8_t *saved_sequence1; //pointer to array of pwm values in eeprom
+extern uint8_t sequence2[SEQUENCE2_SIZE]; // array of pwm walues
+extern uint8_t *saved_sequence2; //pointer to array of pwm values in eeprom
+#define DISPLAY_SEQ_SIZE 0x200
+extern uint8_t displaySeq[DISPLAY_SEQ_SIZE+1];
+extern uint8_t *saved_displaySeq;
+//-----------------------
+// used gpio pins
+#define Led_builtin PB5
+// #define Buzzer PC3 
+//--------------------
+
+
+#endif
