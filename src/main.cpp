@@ -120,7 +120,6 @@ int main()
       */
       stepUp();
       
-
     }
 
     if ((mainClock_us_temp - clk3) >= interval3)

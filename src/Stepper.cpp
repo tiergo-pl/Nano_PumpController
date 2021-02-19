@@ -11,20 +11,20 @@ void stepperClr(){
 }
 
 void stepUp(){
-  if (PORTC & _BV(PC0)){
-    stepperClr();
-    PORTC |= _BV(PC1);
-  } else
-  if (PORTC & _BV(PC1)){
-    stepperClr();
-    PORTC |= _BV(PC2);
-  } else 
-  if (PORTC & _BV(PC2)){
-    stepperClr();
-    PORTC |= _BV(PC3);
-  } else
   if (PORTC & _BV(PC3)){
     stepperClr();
     PORTC |= _BV(PC0);
+  }
+  if (PORTC & _BV(PC2)){
+    stepperClr();
+    PORTC |= _BV(PC3);
+  }
+  if (PORTC & _BV(PC1)){
+    stepperClr();
+    PORTC |= _BV(PC2);
+  } 
+  if (PORTC & _BV(PC0)){
+    stepperClr();
+    PORTC |= _BV(PC1);
   }
 }
