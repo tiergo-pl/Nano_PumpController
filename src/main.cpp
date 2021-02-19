@@ -119,6 +119,7 @@ int main()
       uartTransmitString(uartOutputString);
       */
       stepUp();
+      
 
     }
 
