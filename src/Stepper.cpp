@@ -11,20 +11,24 @@ void stepperClr(){
 }
 
 void stepUp(){
-  if (PORTC & _BV(PC3)){
-    stepperClr();
-    PORTC |= _BV(PC0);
-  }
-  if (PORTC & _BV(PC2)){
-    stepperClr();
-    PORTC |= _BV(PC3);
-  }
-  if (PORTC & _BV(PC1)){
-    stepperClr();
-    PORTC |= _BV(PC2);
-  } 
-  if (PORTC & _BV(PC0)){
-    stepperClr();
-    PORTC |= _BV(PC1);
+  uint8_t tempPORTC = PORTC & 0b00001111;
+  stepperClr();
+  switch (tempPORTC){
+    case _BV(PC0):
+      PORTC |= _BV(PC1);
+    break;
+
+    case _BV(PC1):
+      PORTC |= _BV(PC2);
+    break;
+
+    case _BV(PC2):
+      PORTC |= _BV(PC3);
+    break;
+
+    default:
+      PORTC |= _BV(PC0);
+    break;
+
   }
 }
