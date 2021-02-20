@@ -7,5 +7,6 @@
 void stepperInit();
 void stepperClr();
 void stepUp();
+void stepHalfUp();
 
 #endif // !_Stepper_h_

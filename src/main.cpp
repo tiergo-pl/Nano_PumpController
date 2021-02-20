@@ -108,6 +108,7 @@ int main()
       PORTC ^= _BV(debugPin0);
       pwm1 = rand();
       //      PORTC ^= (1 << debugPin0);
+      */
       /*
       if (sizeof(uartInputString) <= (strlen(uartInputString) + 1))
         uartInputString[0] = 0;
@@ -118,7 +119,8 @@ int main()
       PORTC &= ~_BV(debugPin0);
       uartTransmitString(uartOutputString);
       */
-      stepUp();
+      //stepUp();
+      stepHalfUp();
       
     }
 
