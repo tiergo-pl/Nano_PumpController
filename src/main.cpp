@@ -11,9 +11,7 @@
 #include "uart.h"
 #include "debug.h"
 #include "parse.h"
-#include "pwm.h"
-#include "i2c.h"
-#include "Stepper.h"
+//#include "outputs.h"
 
 void timer_init(void)
 {
@@ -27,6 +25,7 @@ void port_init(void)
 {
   DDRB = (1 << Led_builtin) | _BV(debugPin3); // Led builtin (13)
   //DDRC = (1 << debugPin0) | (1 << debugPin1) | (1 << debugPin2) | _BV(Buzzer);
+  DDRD = (1 << debugPin0) | (1 << debugPin1| (1 << BEEPER));
 }
 
 void adc_init()
@@ -38,7 +37,6 @@ void adc_init()
 
 ISR(ADC_vect)
 {
-  pwm0_2 = ADCH / 2 + 127;
   ADCSRA |= _BV(ADSC);
 }
 
@@ -54,10 +52,6 @@ int main()
   timer_init();
   port_init();
   uart_init();
-  pwm_init();
-  // adc_init();
-  // i2c_init();  // attention!! make i2c missing exception handling
-  stepperInit();
   sei();
 
   interval1 = eeprom_read_dword(saved_interval1);
@@ -68,12 +62,8 @@ int main()
   eeprom_read_block(sequence2, saved_sequence2, SEQUENCE2_SIZE);
   char uartInputString[64] = "\0";
   char cmdLine[64] = "\0";
-  //  uint8_t pwm0SequenceIndex = 0;
-  uint8_t pwm0_1SequenceIndex = 0;
-  uint8_t pwm0_2SequenceIndex = 0;
+
   // PORTC |= _BV(debugPin2);
-  // eeprom_read_block(&displaySeq[1], saved_displaySeq, DISPLAY_SEQ_SIZE); // attention!! make i2c missing exception handling
-  // displayFill();  // attention!! make i2c missing exception handling
 
   while (1)
   {
@@ -82,60 +72,28 @@ int main()
     {
       mainClock_us_temp = mainClock_us;
     }
+    if ((mainClock_us_temp-tickAtLastSec)>= 1000000/MAIN_CLOCK_TICK){
+      tickAtLastSec = mainClock_us_temp;
+      mainClock_seconds++;
+    }
 
     if ((mainClock_us_temp - clk1) >= interval1)
     {
       clk1 = mainClock_us_temp;
       PORTB ^= 1 << Led_builtin;
       // PORTC ^= _BV(debugPin2);
-      //      pwm0SequenceIndex = pwmSequence(& pwm0, sequence1, pwm0SequenceIndex, SEQUENCE1_SIZE);
-      pwm0_1SequenceIndex = pwmSequence(&pwm0_1, sequence1, pwm0_1SequenceIndex, SEQUENCE1_SIZE);
-
-/*      if (PORTB & _BV(Led_builtin))
-        i2cSeq[1] = 0xa7;
-      else
-        i2cSeq[1] = 0xa6;
-      i2cSeq[0] = 0;
-      i2c_write(DISPLAY_ADDRESS, i2cSeq, 2);*/
-
     }
     if ((mainClock_us_temp - clk2) >= interval2)
     {
       clk2 = mainClock_us_temp;
-      
-      /* removed - stepper motor usage
-
-      PORTC ^= _BV(debugPin0);
-      pwm1 = rand();
-      //      PORTC ^= (1 << debugPin0);
-      */
-      /*
-      if (sizeof(uartInputString) <= (strlen(uartInputString) + 1))
-        uartInputString[0] = 0;
-      uartReceiveString(uartInputString);
-      //  uartTransmit(sprintf(uartOutputString, "It's UART test. You wrote %s. clk2= %lu, buffer= %s, buffer 1st char= %c\r\n", uartInputString, clk2, uartInputBuffer, uartInputBuffer[0]), uartOutputString);
-      sprintf(uartOutputString, "clk2= %lu, UART debug. uartInputString: [%s] , cmdLine: [%s] \r\n", clk2, uartInputString, cmdLine);
-      PORTC |= _BV(debugPin0);
-      PORTC &= ~_BV(debugPin0);
-      uartTransmitString(uartOutputString);
-      */
-      //stepUp();
-      stepHalfUp();
-      
+      PORTD ^= 1 << debugPin0;
     }
 
     if ((mainClock_us_temp - clk3) >= interval3)
     {
       clk3 = mainClock_us_temp;
-
-          /* removed - stepper motor usage
-
-      PORTC ^= _BV(debugPin1);
-      //      pwm0_2SequenceIndex = pwmSequence(&pwm0_2, sequence2, pwm0_2SequenceIndex, SEQUENCE2_SIZE);
-      */
+      PORTD ^= 1 << debugPin1;
     }
-    
-    
 
     if ((mainClock_us_temp - clkBuzzer) >= intervalBuzzer)
     {
@@ -154,17 +112,5 @@ int main()
       }
     }
 
-    //    uartReceive(uartInputString, uartInputBuffer);
-    // uartReceive(uartBuffer.data, uartInputBuffer);
-
-    //    _delay_us(5);
-    //    PORTC |= _BV(debugPin0);
-    //    PORTC &= ~_BV(debugPin0);
-    //    PORTC |= _BV(debugPin2);
-
-    //    PORTC &= ~_BV(debugPin2);
-    //      for (uint8_t i = 0; i < 50; ++i) //DEBUG ONLY !!!!!
-    //        asm("nop");
-    //uartTransmitString((char *)"LED_builtin toggle\n");//DEBUG ONLY!!!
   }
 }

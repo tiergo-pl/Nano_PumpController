@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 class circBuffer
 {
 private:
@@ -16,7 +15,7 @@ private:
 
 public:
   char *data;
-  circBuffer(uint8_t buf_size, uint8_t TEST_startpoint);
+  circBuffer(uint8_t buf_size, uint8_t startpoint);
   void write(char cell);
   char read();
   bool isEmpty();

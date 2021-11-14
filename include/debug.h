@@ -2,10 +2,9 @@
 #define _debug_h_
 
 #include <avr/io.h>
-/* removed due to stepper motor drive usage
-#define debugPin0 PC0
-#define debugPin1 PC1
-#define debugPin2 PC2 */
+#define debugPin0 PD2
+#define debugPin1 PD3
+#define debugPin2 PC2
 #define debugPin3 PB4
 
 

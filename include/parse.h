@@ -6,8 +6,7 @@
 
 #include "globals.h"
 #include "uart.h"
-#include "pwm.h"
-#include "i2c.h"
+#include "outputs.h"
 
 // commands in cli
 #define CMD_SAVE "save"
@@ -22,6 +21,9 @@
 #define CMD_random "rand"
 #define CMD_contrast "contrast"
 #define CMD_displayfill "df"
+#define CMD_beepOn "beepon"
+#define CMD_beepOff "beepoff"
+
 
 //---------------------
 

@@ -1,5 +1,5 @@
 #include "parse.h"
-
+Beeper beeper;
 uint8_t detectEndlCmdline(char *cmdline, char *inputString)
 {
   uint8_t i = 0;
@@ -44,7 +44,13 @@ void parseCmdline(char *cmdLine)
     }
     else if (!strcmp(cmd, CMD_SHOW))
     {
-      sprintf(uartOutputString, "mainClk= %lu, cmdLine: [%s], interval1= %lu, interval2= %lu, interval3= %lu, intervalBuzzer= %lu \r\n", mainClock_us_temp, cmd, interval1, interval2, interval3, intervalBuzzer);
+      /*
+      sprintf(uartOutputString, "mainClk= %lu, cmdLine: [%s], interval1= %lu, interval2= %lu, interval3= %lu, intervalBuzzer= %lu \r\n",
+              mainClock_us_temp, cmd, interval1 * MAIN_CLOCK_TICK, interval2 * MAIN_CLOCK_TICK, interval3 * MAIN_CLOCK_TICK, intervalBuzzer);
+      uartTransmitString(uartOutputString);
+      */
+      sprintf(uartOutputString, "mainClk= %lu, uptime: %lu s, interval1= %lu, interval2= %lu, interval3= %lu, intervalBuzzer= %lu \r\n",
+              mainClock_us_temp, mainClock_seconds, interval1 * MAIN_CLOCK_TICK, interval2 * MAIN_CLOCK_TICK, interval3 * MAIN_CLOCK_TICK, intervalBuzzer);
       uartTransmitString(uartOutputString);
     }
     else if (!strcmp(cmd, CMD_HELP))
@@ -89,11 +95,9 @@ void parseCmdline(char *cmdLine)
     }
     else if (!strcmp(cmd, CMD_pwm0))
     {
-      pwm0 = value;
     }
     else if (!strcmp(cmd, CMD_pwm1))
     {
-      pwm1 = value;
     }
     else if (!strcmp(cmd, CMD_random))
     {
@@ -107,16 +111,20 @@ void parseCmdline(char *cmdLine)
     }
     else if (!strcmp(cmd, CMD_contrast))
     {
-      i2cSeq[0]=0;
-      i2cSeq[1]=0x81; //set contrast
-      i2cSeq[2]=(uint8_t)value;
-      i2c_write(DISPLAY_ADDRESS,i2cSeq,3);
+
       sprintf(uartOutputString, "Display contrast set to: %i \r\n", (uint8_t)value);
       uartTransmitString(uartOutputString);
     }
     else if (!strcmp(cmd, CMD_displayfill))
     {
-      displayFill();
+    }
+    else if (!strcmp(cmd, CMD_beepOn))
+    {
+      beeper.setOn();
+    }
+    else if (!strcmp(cmd, CMD_beepOff))
+    {
+      beeper.setOff();
     }
 
     else

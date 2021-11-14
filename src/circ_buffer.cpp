@@ -1,23 +1,23 @@
 #include "circ_buffer.h"
-
+#ifndef __INTELLISENSE__ //remove annoying error info. Source: https://githubmemory.com/repo/microsoft/vscode-cpptools/issues/7289
 void *operator new[](size_t size)
 {
   return malloc(size);
 }
-
+#endif
 void operator delete[](void *ptr)
 {
   free(ptr);
 }
 
-circBuffer::circBuffer(uint8_t buf_size, uint8_t TEST_startpoint)
+circBuffer::circBuffer(uint8_t buf_size, uint8_t startpoint)
 {
   bufSize = buf_size;
   data = new char[buf_size];
   for (uint8_t i = 0; i < buf_size; ++i)
     data[i] = '\0';
-  headIndex = TEST_startpoint;
-  tailIndex = TEST_startpoint;
+  headIndex = startpoint;
+  tailIndex = startpoint;
   isFullFlag = false;
 }
 void circBuffer::write(char cell)
