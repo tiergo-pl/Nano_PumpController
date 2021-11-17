@@ -3,19 +3,26 @@
 
 #include <avr/io.h>
 
-#include "globals.h"
-
 class Beeper
 {
 private:
+  bool active;
+  bool beepActivated;
+  bool beepOnceActivated;
+  uint32_t beepStart;
+  uint32_t beepEnd;
+
 public:
   Beeper();
   void setOn();
   void setOff();
-  void beep(uint8_t beepDuration, uint8_t beepPause);
+  void setBeep(uint32_t beepStartTime, uint32_t beepDuration);
+  void beep();
   void beepOnce();
   void beepTwice();
+  uint32_t getStart();
+  uint32_t getEnd();
+  bool isOn();
 };
-
 
 #endif // !_outputs_h_

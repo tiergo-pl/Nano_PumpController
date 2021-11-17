@@ -1,5 +1,5 @@
 #include "parse.h"
-Beeper beeper;
+//Beeper beeper;
 uint8_t detectEndlCmdline(char *cmdline, char *inputString)
 {
   uint8_t i = 0;
@@ -49,8 +49,8 @@ void parseCmdline(char *cmdLine)
               mainClock_us_temp, cmd, interval1 * MAIN_CLOCK_TICK, interval2 * MAIN_CLOCK_TICK, interval3 * MAIN_CLOCK_TICK, intervalBuzzer);
       uartTransmitString(uartOutputString);
       */
-      sprintf(uartOutputString, "mainClk= %lu, uptime: %lu s, interval1= %lu, interval2= %lu, interval3= %lu, intervalBuzzer= %lu \r\n",
-              mainClock_us_temp, mainClock_seconds, interval1 * MAIN_CLOCK_TICK, interval2 * MAIN_CLOCK_TICK, interval3 * MAIN_CLOCK_TICK, intervalBuzzer);
+      sprintf(uartOutputString, "mainClk= %lu, uptime: %lu s, interval1= %lu, interval2= %lu, interval3= %lu, intervalBuzzer= %lu beeper= %u\r\n",
+              mainClock_us_temp, mainClock_seconds, interval1 * MAIN_CLOCK_TICK, interval2 * MAIN_CLOCK_TICK, interval3 * MAIN_CLOCK_TICK, intervalBuzzer,beeper.isOn());
       uartTransmitString(uartOutputString);
     }
     else if (!strcmp(cmd, CMD_HELP))

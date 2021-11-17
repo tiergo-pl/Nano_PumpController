@@ -40,8 +40,8 @@ extern uint8_t *saved_sequence2;          //pointer to array of pwm values in ee
 extern uint8_t displaySeq[DISPLAY_SEQ_SIZE + 1];
 extern uint8_t *saved_displaySeq;
 
-//#include "outputs.h"
-//extern Beeper beeper();
+#include "outputs.h"
+extern Beeper beeper;
 //-----------------------
 // used gpio pins
 #define Led_builtin PB5

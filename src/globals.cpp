@@ -1,6 +1,6 @@
 #include "globals.h"
  
-volatile uint32_t mainClock_us = -1000000; //Software counter incremented by timer interrupt
+volatile uint32_t mainClock_us = 0; //Software counter incremented by timer interrupt
 volatile uint32_t mainClock_us_temp;
 volatile uint32_t mainClock_seconds = 0; //Software counter incremented every 1 second
 volatile uint32_t tickAtLastSec;  //Used in 1 second timer calculations
@@ -26,4 +26,4 @@ uint8_t *saved_sequence2 = (uint8_t *)0x340; //pointer to array of pwm values in
 uint8_t displaySeq[DISPLAY_SEQ_SIZE+1];
 uint8_t *saved_displaySeq = (uint8_t *)0x100;
 
-//Beeper beeper();
+Beeper beeper;

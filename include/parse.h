@@ -6,7 +6,7 @@
 
 #include "globals.h"
 #include "uart.h"
-#include "outputs.h"
+//#include "outputs.h"
 
 // commands in cli
 #define CMD_SAVE "save"

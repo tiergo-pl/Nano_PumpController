@@ -25,7 +25,7 @@ void port_init(void)
 {
   DDRB = (1 << Led_builtin) | _BV(debugPin3); // Led builtin (13)
   //DDRC = (1 << debugPin0) | (1 << debugPin1) | (1 << debugPin2) | _BV(Buzzer);
-  DDRD = (1 << debugPin0) | (1 << debugPin1| (1 << BEEPER));
+  DDRD = (1 << debugPin0) | (1 << debugPin1 | (1 << BEEPER));
 }
 
 void adc_init()
@@ -72,10 +72,14 @@ int main()
     {
       mainClock_us_temp = mainClock_us;
     }
-    if ((mainClock_us_temp-tickAtLastSec)>= 1000000/MAIN_CLOCK_TICK){
+    if ((mainClock_us_temp - tickAtLastSec) >= 1000000 / MAIN_CLOCK_TICK)
+    {
       tickAtLastSec = mainClock_us_temp;
       mainClock_seconds++;
+      beeper.setBeep(mainClock_us_temp, 20000);
     }
+
+    beeper.beep();
 
     if ((mainClock_us_temp - clk1) >= interval1)
     {
@@ -111,6 +115,5 @@ int main()
         parseCmdline(cmdLine);
       }
     }
-
   }
 }
