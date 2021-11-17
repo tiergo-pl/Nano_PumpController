@@ -86,20 +86,26 @@ int main()
       switch (secondsPassedInLastMinute)
       {
       case 60:
-        beeper.setBeep(mainClock_us_temp, 250000); //full minute beep
+        beeper.setBeep(mainClock_us_temp, 330000); //full minute beep
         lastMinute = mainClock_seconds;
         break;
       case 30:
-        beeper.setBeep(mainClock_us_temp, 20000,3,10000); //half minute beep
+        beeper.setBeep(mainClock_us_temp, 20000, 3); //half minute beep
         break;
       case 10:
+        beeper.setBeep(mainClock_us_temp, 30000); //every 10 sec beep
+        break;
       case 20:
+        beeper.setBeep(mainClock_us_temp, 20000, 2, 5000); //every 10 sec beep
+        break;
       case 40:
+        beeper.setBeep(mainClock_us_temp, 20000, 4, 5000); //every 10 sec beep
+        break;
       case 50:
-        beeper.setBeep(mainClock_us_temp, 20000,2,10000); //every 10 sec beep
+        beeper.setBeep(mainClock_us_temp, 20000, 5, 10000); //every 10 sec beep
         break;
       default:
-        beeper.setBeep(mainClock_us_temp, 10000); //default 1 sec beep
+        beeper.setBeep(mainClock_us_temp, 5000); //default 1 sec beep
         break;
       }
     }
