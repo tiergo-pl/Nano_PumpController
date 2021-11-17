@@ -64,7 +64,9 @@ int main()
   char cmdLine[64] = "\0";
 
   // PORTC |= _BV(debugPin2);
-
+  uint32_t lastSecond = 0;
+  uint32_t lastMinute = 0;
+  beeper.setBeep(0, 500000); //initial beep on system start
   while (1)
   {
 
@@ -76,7 +78,30 @@ int main()
     {
       tickAtLastSec = mainClock_us_temp;
       mainClock_seconds++;
-      beeper.setBeep(mainClock_us_temp, 20000);
+    }
+    if (mainClock_seconds - lastSecond)
+    {
+      lastSecond = mainClock_seconds;
+      uint8_t secondsPassedInLastMinute = mainClock_seconds - lastMinute;
+      switch (secondsPassedInLastMinute)
+      {
+      case 60:
+        beeper.setBeep(mainClock_us_temp, 250000); //full minute beep
+        lastMinute = mainClock_seconds;
+        break;
+      case 30:
+        beeper.setBeep(mainClock_us_temp, 20000,3,10000); //half minute beep
+        break;
+      case 10:
+      case 20:
+      case 40:
+      case 50:
+        beeper.setBeep(mainClock_us_temp, 20000,2,10000); //every 10 sec beep
+        break;
+      default:
+        beeper.setBeep(mainClock_us_temp, 10000); //default 1 sec beep
+        break;
+      }
     }
 
     beeper.beep();

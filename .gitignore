@@ -18,3 +18,4 @@ lib/README
 listing.lst
 .travis.yml
 .gitignore
+.vscode/settings.json

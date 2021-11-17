@@ -7,16 +7,17 @@ class Beeper
 {
 private:
   bool active;
-  bool beepActivated;
-  bool beepOnceActivated;
-  uint32_t beepStart;
-  uint32_t beepEnd;
+  bool isActivated;
+  uint8_t repeat;
+  uint32_t start;
+  uint32_t end;
+  uint32_t pause;
 
 public:
   Beeper();
   void setOn();
   void setOff();
-  void setBeep(uint32_t beepStartTime, uint32_t beepDuration);
+  void setBeep(uint32_t startTime, uint32_t duration, uint8_t repeatCount = 1, uint32_t pauseDuration = 0); // defaults: repeatCount = 1, pauseDuration = duration
   void beep();
   void beepOnce();
   void beepTwice();
