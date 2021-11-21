@@ -4,6 +4,24 @@
 #define DISPLAY_COMMAND 0x80
 #define ADDRESS_COMMAND 0xC0
 
+const uint8_t digitToSegment[] = {
+    DIGIT_0,
+    DIGIT_1,
+    DIGIT_2,
+    DIGIT_3,
+    DIGIT_4,
+    DIGIT_5,
+    DIGIT_6,
+    DIGIT_7,
+    DIGIT_8,
+    DIGIT_9,
+    DIGIT_A,
+    DIGIT_b,
+    DIGIT_C,
+    DIGIT_d,
+    DIGIT_E,
+    DIGIT_F};
+
 DisplayTM1637::DisplayTM1637(volatile uint8_t *clkPort, uint8_t clkPinNo, volatile uint8_t *dioPort, uint8_t dioPinNo, uint16_t bitDelay)
 {
   pClkPort = clkPort;
@@ -118,20 +136,59 @@ bool DisplayTM1637::sendByte(uint8_t dataByte)
   delay();
   return ack;
 }
-void DisplayTM1637::setSegments(uint8_t segments[], uint8_t lenght, uint8_t position)
+
+uint8_t DisplayTM1637::convertDigit(uint8_t digit)
+{
+  return digitToSegment[digit];
+}
+
+uint8_t *DisplayTM1637::toBcd(uint16_t number, uint8_t bcd[],uint8_t base, bool leadingZeros, uint8_t digitCount)
+{
+  for (int8_t i = digitCount-1; i >= 0; i--)
+  {
+    uint8_t digit = number % base;
+    bcd[i] = convertDigit(digit);
+    number /= base;
+  }
+    return bcd;
+}
+
+void DisplayTM1637::prepareSegments(uint8_t segments[], uint8_t lenght, uint8_t position)
+{
+  for (uint8_t i = 0; i < lenght; i++)
+  {
+    mSegments[i] = segments[i];
+  }
+  mLenght = lenght;
+  mPosition = position;
+  eToExecute = true;
+}
+
+void DisplayTM1637::setSegments()
 {
   start();
   sendByte(DATA_COMMAND);
   stop();
 
   start();
-  sendByte(ADDRESS_COMMAND | (position & 0x07));
+  sendByte(ADDRESS_COMMAND | (mPosition & 0x07));
 
-  for (uint8_t i = 0; i < lenght; i++)
-    sendByte(segments[i]);
+  for (uint8_t i = 0; i < mLenght; i++)
+    sendByte(mSegments[i]);
   stop();
 
   start();
   sendByte(DISPLAY_COMMAND | (mBrightness & 0x0f));
   stop();
+}
+bool DisplayTM1637::execute()
+{
+  if (eToExecute)
+  {
+    setSegments();
+    eToExecute = false;
+    return true;
+  }
+  else
+    return false;
 }
