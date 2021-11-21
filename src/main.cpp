@@ -11,6 +11,7 @@
 #include "uart.h"
 #include "debug.h"
 #include "parse.h"
+#include "display_TM1637.h"
 //#include "outputs.h"
 
 void timer_init(void)
@@ -67,6 +68,14 @@ int main()
   uint32_t lastSecond = 0;
   uint32_t lastMinute = 0;
   beeper.setBeep(0, 500000); //initial beep on system start
+  DisplayTM1637 display(&PORTD, 5, &PORTD, 6);
+  uint8_t dispTest[] = {0xff, 0xff, 0xff, 0xff};
+  display.setSegments(dispTest);
+  dispTest[0] = 0x06;
+  dispTest[1] = 0x5b;
+  dispTest[2] = 0x4f;
+  dispTest[3] = 0x66;
+
   while (1)
   {
 
@@ -91,18 +100,27 @@ int main()
         break;
       case 30:
         beeper.setBeep(mainClock_us_temp, 20000, 3); //half minute beep
+        dispTest[1]++;
+        display.setSegments(dispTest);
         break;
       case 10:
         beeper.setBeep(mainClock_us_temp, 30000); //every 10 sec beep
+        display.setSegments(dispTest);
         break;
       case 20:
         beeper.setBeep(mainClock_us_temp, 20000, 2, 5000); //every 10 sec beep
+        dispTest[0]++;
+        display.setSegments(dispTest);
         break;
       case 40:
         beeper.setBeep(mainClock_us_temp, 20000, 4, 5000); //every 10 sec beep
+        dispTest[2]++;
+        display.setSegments(dispTest);
         break;
       case 50:
         beeper.setBeep(mainClock_us_temp, 20000, 5, 10000); //every 10 sec beep
+        dispTest[3]++;
+        display.setSegments(dispTest);
         break;
       default:
         beeper.setBeep(mainClock_us_temp, 5000); //default 1 sec beep
