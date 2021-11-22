@@ -22,7 +22,7 @@ const uint8_t digitToSegment[] = {
     DIGIT_E,
     DIGIT_F};
 
-DisplayTM1637::DisplayTM1637(volatile uint8_t *clkPort, uint8_t clkPinNo, volatile uint8_t *dioPort, uint8_t dioPinNo, uint16_t bitDelay)
+DisplayTM1637::DisplayTM1637(volatile uint8_t *clkPort, uint8_t clkPinNo, volatile uint8_t *dioPort, uint8_t dioPinNo, uint8_t dispQuantity, uint16_t bitDelay)
 {
   pClkPort = clkPort;
   mClkPinNo = clkPinNo;
@@ -60,10 +60,10 @@ DisplayTM1637::DisplayTM1637(volatile uint8_t *clkPort, uint8_t clkPinNo, volati
     pDioPin = &PIND;
   }
 
+  mQuantity = dispQuantity;
   mBitDelay = bitDelay;
   mBrightness = 0x0f; //full brightness
 }
-
 inline void DisplayTM1637::delay()
 {
   _delay_us(DEFAULT_BIT_DELAY); //normal delay - to upgrade later into non-pausing delay
@@ -142,25 +142,38 @@ uint8_t DisplayTM1637::convertDigit(uint8_t digit)
   return digitToSegment[digit];
 }
 
-uint8_t *DisplayTM1637::toBcd(uint16_t number, uint8_t bcd[],uint8_t base, bool leadingZeros, uint8_t digitCount)
+uint8_t *DisplayTM1637::toBcd(uint16_t number, uint8_t bcd[], uint8_t base, bool leadingZeros, uint8_t digitCount)
 {
-  for (int8_t i = digitCount-1; i >= 0; i--)
+  for (int8_t i = digitCount - 1; i >= 0; i--)
   {
     uint8_t digit = number % base;
     bcd[i] = convertDigit(digit);
     number /= base;
   }
-    return bcd;
+  return bcd;
 }
 
 void DisplayTM1637::prepareSegments(uint8_t segments[], uint8_t lenght, uint8_t position)
 {
-  for (uint8_t i = 0; i < lenght; i++)
+  for (uint8_t i = position; i < lenght; i++)
   {
-    mSegments[i] = segments[i];
+    mSegments[i] &= ~(0b01111111);              //clear only digit segments, leave dots
+    mSegments[i] |= segments[i] & (0b01111111); //set only digit segments, leave dots
   }
-  mLenght = lenght;
-  mPosition = position;
+  /*mLenght = lenght;
+  mPosition = position;*/
+  eToExecute = true;
+}
+void DisplayTM1637::prepareDots(uint8_t dots, uint8_t lenght, uint8_t position)
+{
+  uint8_t dot = dots;
+  dot = dot << (8 - lenght);
+  for (uint8_t i = position; i < lenght+position; i++)
+  {
+    mSegments[i] &= ~(0b10000000);      //clear only dot, leave digit
+    mSegments[i] |= dot & (0b10000000); //set only dot, leave digit
+    dot = dot << 1;
+  }
   eToExecute = true;
 }
 
@@ -171,9 +184,9 @@ void DisplayTM1637::setSegments()
   stop();
 
   start();
-  sendByte(ADDRESS_COMMAND | (mPosition & 0x07));
+  sendByte(ADDRESS_COMMAND /*| (mPosition & 0x07)*/);
 
-  for (uint8_t i = 0; i < mLenght; i++)
+  for (uint8_t i = 0; i < /*mLenght*/ mQuantity; i++)
     sendByte(mSegments[i]);
   stop();
 
@@ -191,4 +204,38 @@ bool DisplayTM1637::execute()
   }
   else
     return false;
+}
+
+//for testing only
+//for testing only
+//for testing only
+//for testing only
+//for testing only
+//for testing only
+//for testing only
+//for testing only
+
+uint8_t Klasa::childClassTest()
+{
+  return mDioPinNo;
+}
+
+uint8_t Klasa::getDioPinNo()
+{
+  return mDioPinNo;
+}
+
+int BaseClass::getBaseMember()
+{
+  return member;
+}
+
+int ChildClass::getMember()
+{
+  return member;
+}
+
+int ChildClass::getChildMember()
+{
+  return childMember;
 }

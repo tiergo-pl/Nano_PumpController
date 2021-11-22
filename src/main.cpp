@@ -72,7 +72,22 @@ int main()
   DisplayTM1637 display(&PORTD, 5, &PORTD, 6);
   uint8_t dispTest[] = {0xff, 0xff, 0xff, 0xff};
   display.prepareSegments(dispTest);
+  display.prepareDots(0x0f);
   display.execute();
+
+  //classes/object inheritance ability compiler test
+  Klasa obiekt(&PORTB, 0, &PORTB, 1);
+  uint8_t pinNumber = obiekt.getDioPinNo();
+  pinNumber++;
+
+  BaseClass baseObject;
+  int aaaa = baseObject.getBaseMember();
+  ChildClass childObject;
+  int bbbb = childObject.getMember();
+  aaaa *= bbbb;
+  bbbb = childObject.childMember;
+
+  //end
 
   while (1)
   {
@@ -115,7 +130,7 @@ int main()
         beeper.setBeep(mainClock_us_temp, 5000); //default 1 sec beep
         break;
       }
-      
+
       display.prepareSegments(display.toBcd(mainClock_seconds, dispTest));
     }
 
@@ -132,6 +147,10 @@ int main()
       clk1 = mainClock_us_temp;
       PORTB ^= 1 << Led_builtin;
       // PORTC ^= _BV(debugPin2);
+      if (PORTB & _BV(Led_builtin))
+        display.prepareDots(0,3,1);
+      else
+        display.prepareDots(0x0f,3,1);
     }
     if ((mainClock_us_temp - clk2) >= interval2)
     {
