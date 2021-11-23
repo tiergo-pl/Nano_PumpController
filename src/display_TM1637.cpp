@@ -184,9 +184,9 @@ void DisplayTM1637::setSegments()
   stop();
 
   start();
-  sendByte(ADDRESS_COMMAND /*| (mPosition & 0x07)*/);
+  sendByte(ADDRESS_COMMAND);
 
-  for (uint8_t i = 0; i < /*mLenght*/ mQuantity; i++)
+  for (uint8_t i = 0; i < mQuantity; i++)
     sendByte(mSegments[i]);
   stop();
 

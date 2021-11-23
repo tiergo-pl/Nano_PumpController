@@ -1,5 +1,7 @@
-#include "outputs.h"
+#include "pins.h"
 #include "globals.h"
+
+
 
 Beeper::Beeper(){};
 void Beeper::setBeep(uint32_t startTime, uint32_t duration, uint8_t repeatCount, uint32_t pauseDuration)

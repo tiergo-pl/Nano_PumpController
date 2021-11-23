@@ -1,7 +1,13 @@
-#ifndef _outputs_h_
-#define _outputs_h_
+#ifndef _pins_h_
+#define _pins_h_
 
 #include <avr/io.h>
+
+class Pin
+{
+  private:
+  public:
+};
 
 class Beeper
 {
@@ -26,4 +32,4 @@ public:
   bool isOn();
 };
 
-#endif // !_outputs_h_
+#endif // !_pins_h_

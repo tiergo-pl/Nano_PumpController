@@ -38,8 +38,6 @@ protected:
 
   uint8_t mQuantity;
   uint8_t mSegments[6];
-  /*uint8_t mLenght;
-  uint8_t mPosition;*/
   uint16_t mBitDelay;
   uint8_t mBrightness;
   bool eToExecute;

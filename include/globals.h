@@ -8,7 +8,7 @@
 extern volatile uint32_t mainClock_us;      //Software timer incremented by hw timer interrupt - System tick
 extern volatile uint32_t mainClock_us_temp; //Copy of sw timer used in time calculations
 extern volatile uint32_t mainClock_seconds; //Software counter incremented every 1 second
-extern volatile uint32_t tickAtLastSec; //Used in 1 second timer calculations
+extern volatile uint32_t tickAtLastSec;     //Used in 1 second timer calculations
 
 extern volatile uint32_t clk1;
 extern volatile uint32_t clk2;
@@ -40,7 +40,7 @@ extern uint8_t *saved_sequence2;          //pointer to array of pwm values in ee
 extern uint8_t displaySeq[DISPLAY_SEQ_SIZE + 1];
 extern uint8_t *saved_displaySeq;
 
-#include "outputs.h"
+#include "pins.h"
 extern Beeper beeper;
 //-----------------------
 // used gpio pins

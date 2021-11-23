@@ -12,7 +12,7 @@
 #include "debug.h"
 #include "parse.h"
 #include "display_TM1637.h"
-//#include "outputs.h"
+//#include "pins.h"
 
 void timer_init(void)
 {
@@ -148,9 +148,9 @@ int main()
       PORTB ^= 1 << Led_builtin;
       // PORTC ^= _BV(debugPin2);
       if (PORTB & _BV(Led_builtin))
-        display.prepareDots(0,3,1);
+        display.prepareDots(0, 3, 1);
       else
-        display.prepareDots(0x0f,3,1);
+        display.prepareDots(0x0f, 3, 1);
     }
     if ((mainClock_us_temp - clk2) >= interval2)
     {
