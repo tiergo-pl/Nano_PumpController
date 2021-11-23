@@ -2,10 +2,10 @@
 #define _debug_h_
 
 #include <avr/io.h>
-#define debugPin0 PD2
-#define debugPin1 PD3
-#define debugPin2 PC2
-#define debugPin3 PB4
+//#define debugPin0 PD2
+//#define debugPin1 PD3
+//#define debugPin2 PC2
+//#define debugPin3 PB4
 
 
 /*

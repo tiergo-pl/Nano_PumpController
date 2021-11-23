@@ -24,9 +24,13 @@ void timer_init(void)
 
 void port_init(void)
 {
-  DDRB = (1 << Led_builtin) | _BV(debugPin3); // Led builtin (13)
+  //DDRB = (1 << LED_BUILTIN) | _BV(debugPin3); // Led builtin (13)
   //DDRC = (1 << debugPin0) | (1 << debugPin1) | (1 << debugPin2) | _BV(Buzzer);
-  DDRD = (1 << debugPin0) | (1 << debugPin1 | (1 << BEEPER));
+
+  ledBuiltin.outputLow();
+  aeration.outputLow();
+  pump.outputLow();
+  DDRD = ((1 << BEEPER));
 }
 
 void adc_init()
@@ -145,9 +149,10 @@ int main()
     if ((mainClock_us_temp - clk1) >= interval1)
     {
       clk1 = mainClock_us_temp;
-      PORTB ^= 1 << Led_builtin;
+      //PORTB ^= 1 << LED_BUILTIN;
       // PORTC ^= _BV(debugPin2);
-      if (PORTB & _BV(Led_builtin))
+      ledBuiltin.toggle();
+      if (PORTB & _BV(LED_BUILTIN))
         display.prepareDots(0, 3, 1);
       else
         display.prepareDots(0x0f, 3, 1);
@@ -155,13 +160,15 @@ int main()
     if ((mainClock_us_temp - clk2) >= interval2)
     {
       clk2 = mainClock_us_temp;
-      PORTD ^= 1 << debugPin0;
+      //PORTD ^= 1 << debugPin0;
+      aeration.toggle();
     }
 
     if ((mainClock_us_temp - clk3) >= interval3)
     {
       clk3 = mainClock_us_temp;
-      PORTD ^= 1 << debugPin1;
+      //PORTD ^= 1 << debugPin1;
+      pump.toggle();
     }
 
     if ((mainClock_us_temp - clkBuzzer) >= intervalBuzzer)

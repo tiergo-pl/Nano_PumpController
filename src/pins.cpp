@@ -1,7 +1,67 @@
 #include "pins.h"
 #include "globals.h"
 
-
+Pin::Pin(volatile uint8_t *port, uint8_t pinNo)
+{
+  mPinNo = pinNo;
+  pPort = port;
+  if (*pPort == PORTB)
+  {
+    pDdr = &DDRB;
+    pPin = &PINB;
+  }
+  if (*pPort == PORTC)
+  {
+    pDdr = &DDRC;
+    pPin = &PINC;
+  }
+  if (*pPort == PORTD)
+  {
+    pDdr = &DDRD;
+    pPin = &PIND;
+  }
+}
+void Pin::inputHiZ()
+{
+  *pDdr &= ~_BV(mPinNo); //input
+  low_HiZ();
+}
+void Pin::inputPullUp()
+{
+  *pDdr &= ~_BV(mPinNo); //input
+  high_PullUp();
+}
+void Pin::low_HiZ()
+{
+  *pPort &= ~_BV(mPinNo); 
+}
+void Pin::high_PullUp()
+{
+  *pPort |= _BV(mPinNo);
+}
+void Pin::outputLow()
+{
+  *pDdr |= _BV(mPinNo); //output
+  low_HiZ();
+}
+void Pin::outputHigh()
+{
+  *pDdr |= _BV(mPinNo); //output
+  high_PullUp();
+}
+void Pin::toggle()
+{
+  *pPort ^= _BV(mPinNo);
+  //*pPin |=_BV(mPinNo);
+}
+bool Pin::readInput()
+{
+  return *pPin & _BV(mPinNo);
+}
+bool Pin::readOutput()
+{
+  return *pPort & _BV(mPinNo);
+}
 
 Beeper::Beeper(){};
 void Beeper::setBeep(uint32_t startTime, uint32_t duration, uint8_t repeatCount, uint32_t pauseDuration)

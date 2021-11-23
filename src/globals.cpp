@@ -27,3 +27,6 @@ uint8_t displaySeq[DISPLAY_SEQ_SIZE + 1];
 uint8_t *saved_displaySeq = (uint8_t *)0x100;
 
 Beeper beeper;
+Pin ledBuiltin(&LED_BUILTIN);
+Pin aeration(&AERATION);
+Pin pump(&PUMP);
