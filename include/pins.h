@@ -7,11 +7,11 @@ class Pin
 {
 protected:
   uint8_t mPinNo;
-
-public:
   volatile uint8_t *pPort;
   volatile uint8_t *pDdr;
   volatile uint8_t *pPin;
+
+public:
   /*Initialize PIN
   *Choose PORTx and PINxy
   *@param port eeeee
@@ -26,6 +26,11 @@ public:
   void toggle(); //toggle PORT register - toggle output level or input pull-up resistor
   bool readInput();
   bool readOutput();
+
+  uint8_t getPinNo();
+  volatile uint8_t *getPort();
+  volatile uint8_t *getDdr();
+  volatile uint8_t *getPin();
 };
 
 class Beeper

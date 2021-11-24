@@ -168,6 +168,7 @@ int main()
       else
         display.prepareDots(0x0f, 3, 1);
       ledBuiltin.toggle();
+      //PINB |= _BV(PB5);
     }
     if ((mainClock_us_temp - clk2) >= interval2)
     {
@@ -180,6 +181,9 @@ int main()
         debugDiode.low_HiZ();
       if (!kbMenu.readInput())
         debugDiode.toggle();
+        //(*debugDiode.getPin()) = ((*debugDiode.getPin()) | _BV(debugDiode.getPinNo())); // why not working??
+
+      //PIND |= _BV(7); // but this work?
     }
 
     if ((mainClock_us_temp - clk3) >= interval3)
@@ -188,13 +192,12 @@ int main()
       //PORTD ^= 1 << debugPin1;
       //pump.toggle();
       sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
-              mainClock_seconds, pump.pPort, *pump.pPort, pump.pDdr, *pump.pDdr, pump.pPin, *pump.pPin);
+              mainClock_seconds, pump.getPort(), *pump.getPort(), pump.getDdr(), *pump.getDdr(), pump.getPin(), *pump.getPin());
       uartTransmitString(debugString);
       sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
-              mainClock_seconds, kbMenu.pPort, *kbMenu.pPort, kbMenu.pDdr, *kbMenu.pDdr, kbMenu.pPin, *kbMenu.pPin);
+              mainClock_seconds, kbMenu.getPort(), *kbMenu.getPort(), kbMenu.getDdr(), *kbMenu.getDdr(), kbMenu.getPin(), *kbMenu.getPin());
       uartTransmitString(debugString);
     }
-
     if ((mainClock_us_temp - clkBuzzer) >= intervalBuzzer)
     {
       clkBuzzer = mainClock_us_temp;

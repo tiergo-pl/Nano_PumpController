@@ -33,7 +33,7 @@ void Pin::inputPullUp()
 }
 void Pin::low_HiZ()
 {
-  *pPort &= ~_BV(mPinNo); 
+  *pPort &= ~_BV(mPinNo);
 }
 void Pin::high_PullUp()
 {
@@ -52,7 +52,7 @@ void Pin::outputHigh()
 void Pin::toggle()
 {
   *pPort ^= _BV(mPinNo);
-  //*pPin |=_BV(mPinNo);
+  //(*this->pPin) |= _BV(mPinNo); //why not working??
 }
 bool Pin::readInput()
 {
@@ -61,6 +61,22 @@ bool Pin::readInput()
 bool Pin::readOutput()
 {
   return *pPort & _BV(mPinNo);
+}
+uint8_t Pin::getPinNo()
+{
+  return mPinNo;
+}
+volatile uint8_t *Pin::getPort()
+{
+  return pPort;
+}
+volatile uint8_t *Pin::getDdr()
+{
+  return pDdr;
+}
+volatile uint8_t *Pin::getPin()
+{
+  return pPin;
 }
 
 Beeper::Beeper(){};
