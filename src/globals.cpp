@@ -30,3 +30,7 @@ Beeper beeper;
 Pin ledBuiltin(&LED_BUILTIN);
 Pin aeration(&AERATION);
 Pin pump(&PUMP);
+Pin kbMenu(&KB_MENU);
+Pin kbUp(&KB_UP);
+Pin kbDown(&KB_DOWN);
+Pin debugDiode(&PORTD,7);

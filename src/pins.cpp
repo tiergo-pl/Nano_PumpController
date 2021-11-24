@@ -5,17 +5,17 @@ Pin::Pin(volatile uint8_t *port, uint8_t pinNo)
 {
   mPinNo = pinNo;
   pPort = port;
-  if (*pPort == PORTB)
+  if (pPort == &PORTB)
   {
     pDdr = &DDRB;
     pPin = &PINB;
   }
-  if (*pPort == PORTC)
+  if (pPort == &PORTC)
   {
     pDdr = &DDRC;
     pPin = &PINC;
   }
-  if (*pPort == PORTD)
+  if (pPort == &PORTD)
   {
     pDdr = &DDRD;
     pPin = &PIND;

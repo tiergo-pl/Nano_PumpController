@@ -26,17 +26,17 @@ DisplayTM1637::DisplayTM1637(volatile uint8_t *clkPort, uint8_t clkPinNo, volati
 {
   pClkPort = clkPort;
   mClkPinNo = clkPinNo;
-  if (*pClkPort == PORTB)
+  if (pClkPort == &PORTB)
   {
     pClkDdr = &DDRB;
     pClkPin = &PINB;
   }
-  if (*pClkPort == PORTC)
+  if (pClkPort == &PORTC)
   {
     pClkDdr = &DDRC;
     pClkPin = &PINC;
   }
-  if (*pClkPort == PORTD)
+  if (pClkPort == &PORTD)
   {
     pClkDdr = &DDRD;
     pClkPin = &PIND;
@@ -44,17 +44,17 @@ DisplayTM1637::DisplayTM1637(volatile uint8_t *clkPort, uint8_t clkPinNo, volati
 
   pDioPort = dioPort;
   mDioPinNo = dioPinNo;
-  if (*pDioPort == PORTB)
+  if (pDioPort == &PORTB)
   {
     pDioDdr = &DDRB;
     pDioPin = &PINB;
   }
-  if (*pDioPort == PORTC)
+  if (pDioPort == &PORTC)
   {
     pDioDdr = &DDRC;
     pDioPin = &PINC;
   }
-  if (*pDioPort == PORTD)
+  if (pDioPort == &PORTD)
   {
     pDioDdr = &DDRD;
     pDioPin = &PIND;

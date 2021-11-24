@@ -45,6 +45,9 @@ extern uint8_t *saved_displaySeq;
 #define LED_BUILTIN PORTB,PB5
 #define AERATION PORTD,PD2
 #define PUMP PORTD,PD3
+#define KB_MENU PORTB,0
+#define KB_UP PORTB,1
+#define KB_DOWN PORTB,2
 
 #define BEEPER PD4
 // #define Buzzer PC3
@@ -55,5 +58,9 @@ extern Beeper beeper;
 extern Pin ledBuiltin;
 extern Pin aeration;
 extern Pin pump;
+extern Pin kbMenu;
+extern Pin kbUp;
+extern Pin kbDown;
+extern Pin debugDiode;
 
 #endif

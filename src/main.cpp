@@ -27,10 +27,14 @@ void port_init(void)
   //DDRB = (1 << LED_BUILTIN) | _BV(debugPin3); // Led builtin (13)
   //DDRC = (1 << debugPin0) | (1 << debugPin1) | (1 << debugPin2) | _BV(Buzzer);
 
-  ledBuiltin.outputLow();
-  aeration.outputLow();
-  pump.outputLow();
   DDRD = ((1 << BEEPER));
+  ledBuiltin.outputLow();
+  aeration.outputHigh();
+  pump.outputHigh();
+  kbMenu.inputPullUp();
+  kbUp.inputPullUp();
+  kbDown.inputPullUp();
+  debugDiode.outputHigh();
 }
 
 void adc_init()
@@ -67,6 +71,7 @@ int main()
   eeprom_read_block(sequence2, saved_sequence2, SEQUENCE2_SIZE);
   char uartInputString[64] = "\0";
   char cmdLine[64] = "\0";
+  char debugString[120];
 
   // PORTC |= _BV(debugPin2);
   uint32_t lastSecond = 0;
@@ -111,21 +116,26 @@ int main()
       uint8_t secondsPassedInLastMinute = mainClock_seconds - lastMinute;
       switch (secondsPassedInLastMinute)
       {
+
       case 60:
         beeper.setBeep(mainClock_us_temp, 330000); //full minute beep
         lastMinute = mainClock_seconds;
+        pump.outputLow();
         break;
       case 30:
         beeper.setBeep(mainClock_us_temp, 20000, 3); //half minute beep
         break;
       case 10:
         beeper.setBeep(mainClock_us_temp, 30000); //every 10 sec beep
+        aeration.outputHigh();
         break;
       case 20:
         beeper.setBeep(mainClock_us_temp, 20000, 2, 5000); //every 10 sec beep
+        aeration.outputLow();
         break;
       case 40:
         beeper.setBeep(mainClock_us_temp, 20000, 4, 5000); //every 10 sec beep
+        pump.outputHigh();
         break;
       case 50:
         beeper.setBeep(mainClock_us_temp, 20000, 5, 10000); //every 10 sec beep
@@ -142,6 +152,8 @@ int main()
     if (!beeper.isOn() && mainClock_seconds == 0)
     {
       display.prepareSegments(display.toBcd(mainClock_seconds, dispTest));
+      aeration.outputLow();
+      pump.outputLow();
     }
 
     display.execute();
@@ -151,24 +163,36 @@ int main()
       clk1 = mainClock_us_temp;
       //PORTB ^= 1 << LED_BUILTIN;
       // PORTC ^= _BV(debugPin2);
-      ledBuiltin.toggle();
-      if (PORTB & _BV(LED_BUILTIN))
+      if (ledBuiltin.readOutput())
         display.prepareDots(0, 3, 1);
       else
         display.prepareDots(0x0f, 3, 1);
+      ledBuiltin.toggle();
     }
     if ((mainClock_us_temp - clk2) >= interval2)
     {
       clk2 = mainClock_us_temp;
       //PORTD ^= 1 << debugPin0;
-      aeration.toggle();
+      //aeration.toggle();
+      if (!kbUp.readInput())
+        debugDiode.high_PullUp();
+      if (!kbDown.readInput())
+        debugDiode.low_HiZ();
+      if (!kbMenu.readInput())
+        debugDiode.toggle();
     }
 
     if ((mainClock_us_temp - clk3) >= interval3)
     {
       clk3 = mainClock_us_temp;
       //PORTD ^= 1 << debugPin1;
-      pump.toggle();
+      //pump.toggle();
+      sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
+              mainClock_seconds, pump.pPort, *pump.pPort, pump.pDdr, *pump.pDdr, pump.pPin, *pump.pPin);
+      uartTransmitString(debugString);
+      sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
+              mainClock_seconds, kbMenu.pPort, *kbMenu.pPort, kbMenu.pDdr, *kbMenu.pDdr, kbMenu.pPin, *kbMenu.pPin);
+      uartTransmitString(debugString);
     }
 
     if ((mainClock_us_temp - clkBuzzer) >= intervalBuzzer)
