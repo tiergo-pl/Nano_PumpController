@@ -40,6 +40,8 @@ extern uint8_t *saved_sequence2;          //pointer to array of pwm values in ee
 extern uint8_t displaySeq[DISPLAY_SEQ_SIZE + 1];
 extern uint8_t *saved_displaySeq;
 
+extern bool consoleDebugOn; //debugging via serial port (console)
+
 //-----------------------
 // used gpio pins
 #define LED_BUILTIN PORTB,PB5
@@ -49,7 +51,7 @@ extern uint8_t *saved_displaySeq;
 #define KB_UP PORTB,1
 #define KB_DOWN PORTB,2
 
-#define BEEPER PD4
+#define BEEPER PORTD,PD4
 // #define Buzzer PC3
 //--------------------
 

@@ -33,10 +33,9 @@ public:
   volatile uint8_t *getPin();
 };
 
-class Beeper
+class Beeper: public Pin
 {
 private:
-  bool active;
   bool isActivated;
   uint8_t repeat;
   uint32_t start;
@@ -44,7 +43,7 @@ private:
   uint32_t pause;
 
 public:
-  Beeper();
+  using Pin::Pin;
   void setOn();
   void setOff();
   void setBeep(uint32_t startTime, uint32_t duration, uint8_t repeatCount = 1, uint32_t pauseDuration = 0); // defaults: repeatCount = 1, pauseDuration = duration

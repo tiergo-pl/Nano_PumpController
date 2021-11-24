@@ -26,7 +26,9 @@ uint8_t *saved_sequence2 = (uint8_t *)0x340; //pointer to array of pwm values in
 uint8_t displaySeq[DISPLAY_SEQ_SIZE + 1];
 uint8_t *saved_displaySeq = (uint8_t *)0x100;
 
-Beeper beeper;
+bool consoleDebugOn = false;
+
+Beeper beeper(&BEEPER);
 Pin ledBuiltin(&LED_BUILTIN);
 Pin aeration(&AERATION);
 Pin pump(&PUMP);

@@ -79,7 +79,6 @@ volatile uint8_t *Pin::getPin()
   return pPin;
 }
 
-Beeper::Beeper(){};
 void Beeper::setBeep(uint32_t startTime, uint32_t duration, uint8_t repeatCount, uint32_t pauseDuration)
 {
   start = startTime;
@@ -89,7 +88,7 @@ void Beeper::setBeep(uint32_t startTime, uint32_t duration, uint8_t repeatCount,
     pause = pauseDuration;
   else
     pause = duration;
-};
+}
 void Beeper::beep()
 {
   if (repeat)
@@ -112,23 +111,25 @@ void Beeper::beep()
       repeat--;
     }
   }
-};
-void Beeper::beepOnce(){
-
-};
-void Beeper::beepTwice(){
-
-};
+}
+void Beeper::beepOnce()
+{
+  setBeep(mainClock_us_temp, 20000);
+}
+void Beeper::beepTwice()
+{
+  setBeep(mainClock_us_temp, 20000, 2);
+}
 void Beeper::setOn()
 {
-  PORTD |= _BV(BEEPER);
-  active = true;
-};
+  //PORTD |= _BV(BEEPER);
+  high_PullUp();
+}
 void Beeper::setOff()
 {
-  PORTD &= ~_BV(BEEPER);
-  active = false;
-};
+  //PORTD &= ~_BV(BEEPER);
+  low_HiZ();
+}
 uint32_t Beeper::getStart()
 {
   return start;
@@ -139,5 +140,5 @@ uint32_t Beeper::getEnd()
 }
 bool Beeper::isOn()
 {
-  return active;
-};
+  return readOutput();
+}

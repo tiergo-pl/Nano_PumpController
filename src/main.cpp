@@ -26,8 +26,8 @@ void port_init(void)
 {
   //DDRB = (1 << LED_BUILTIN) | _BV(debugPin3); // Led builtin (13)
   //DDRC = (1 << debugPin0) | (1 << debugPin1) | (1 << debugPin2) | _BV(Buzzer);
-
-  DDRD = ((1 << BEEPER));
+  //DDRD = ((1 << BEEPER));
+  beeper.outputLow();
   ledBuiltin.outputLow();
   aeration.outputHigh();
   pump.outputHigh();
@@ -176,12 +176,21 @@ int main()
       //PORTD ^= 1 << debugPin0;
       //aeration.toggle();
       if (!kbUp.readInput())
+      {
         debugDiode.high_PullUp();
+        beeper.beepOnce();
+      }
       if (!kbDown.readInput())
+      {
         debugDiode.low_HiZ();
+        beeper.beepOnce();
+      }
       if (!kbMenu.readInput())
+      {
         debugDiode.toggle();
-        //(*debugDiode.getPin()) = ((*debugDiode.getPin()) | _BV(debugDiode.getPinNo())); // why not working??
+        beeper.beepTwice();
+      }
+      //(*debugDiode.getPin()) = ((*debugDiode.getPin()) | _BV(debugDiode.getPinNo())); // why not working??
 
       //PIND |= _BV(7); // but this work?
     }
@@ -191,12 +200,15 @@ int main()
       clk3 = mainClock_us_temp;
       //PORTD ^= 1 << debugPin1;
       //pump.toggle();
-      sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
-              mainClock_seconds, pump.getPort(), *pump.getPort(), pump.getDdr(), *pump.getDdr(), pump.getPin(), *pump.getPin());
-      uartTransmitString(debugString);
-      sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
-              mainClock_seconds, kbMenu.getPort(), *kbMenu.getPort(), kbMenu.getDdr(), *kbMenu.getDdr(), kbMenu.getPin(), *kbMenu.getPin());
-      uartTransmitString(debugString);
+      if (consoleDebugOn)
+      {
+        sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
+                mainClock_seconds, pump.getPort(), *pump.getPort(), pump.getDdr(), *pump.getDdr(), pump.getPin(), *pump.getPin());
+        uartTransmitString(debugString);
+        sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
+                mainClock_seconds, kbMenu.getPort(), *kbMenu.getPort(), kbMenu.getDdr(), *kbMenu.getDdr(), kbMenu.getPin(), *kbMenu.getPin());
+        uartTransmitString(debugString);
+      }
     }
     if ((mainClock_us_temp - clkBuzzer) >= intervalBuzzer)
     {
@@ -212,6 +224,7 @@ int main()
       if (detectEndlCmdline(cmdLine, uartInputString))
       {
         parseCmdline(cmdLine);
+        uartTransmitString((char *)"\r\n");
       }
     }
   }

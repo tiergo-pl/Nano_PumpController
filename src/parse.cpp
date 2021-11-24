@@ -50,12 +50,29 @@ void parseCmdline(char *cmdLine)
       uartTransmitString(uartOutputString);
       */
       sprintf(uartOutputString, "mainClk= %lu, uptime: %lu s, interval1= %lu, interval2= %lu, interval3= %lu, intervalBuzzer= %lu beeper= %u\r\n",
-              mainClock_us_temp, mainClock_seconds, interval1 * MAIN_CLOCK_TICK, interval2 * MAIN_CLOCK_TICK, interval3 * MAIN_CLOCK_TICK, intervalBuzzer,beeper.isOn());
+              mainClock_us_temp, mainClock_seconds, interval1 * MAIN_CLOCK_TICK, interval2 * MAIN_CLOCK_TICK, interval3 * MAIN_CLOCK_TICK, intervalBuzzer, beeper.isOn());
       uartTransmitString(uartOutputString);
     }
     else if (!strcmp(cmd, CMD_HELP))
     {
       uartTransmitString((char *)"Usage: [COMMAND] ... [VARIABLE=VALUE] ... \r\nexample: interval2=100000 freq=1000 save show ?\r\n");
+      uartTransmitString((char *)"List of"
+                                 "commands:\r\n");
+      uartTransmitString((char *)CMD_SAVE ENDL
+                             CMD_SHOW ENDL
+                                 CMD_HELP ENDL
+                                     CMD_interval1 ENDL
+                                         CMD_interval2 ENDL
+                                             CMD_interval3 ENDL
+                                                 CMD_freqBuzzer ENDL
+                                                     CMD_pwm0 ENDL
+                                                         CMD_pwm1 ENDL
+                                                             CMD_random ENDL
+                                                                 CMD_contrast ENDL
+                                                                     CMD_displayfill ENDL
+                                                                         CMD_beepOn ENDL
+                                                                             CMD_beepOff ENDL
+                                                                                 CMD_DEBUG ENDL);
     }
     else if (!strcmp(cmd, CMD_interval1))
     {
@@ -125,6 +142,15 @@ void parseCmdline(char *cmdLine)
     else if (!strcmp(cmd, CMD_beepOff))
     {
       beeper.setOff();
+    }
+    else if (!strcmp(cmd, CMD_DEBUG))
+    {
+      if ((value == 0) || (value == 1))
+      {
+        consoleDebugOn = (bool)value;
+      }
+      else
+        uartTransmitString((char *)"Input 0 (off) or 1 (on) to control debugging. Nothing changed yet...\r\n");
     }
 
     else
