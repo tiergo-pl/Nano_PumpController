@@ -12,6 +12,7 @@
 #include "debug.h"
 #include "parse.h"
 #include "display_TM1637.h"
+#include "timer.h"
 //#include "pins.h"
 
 void timer_init(void)
@@ -55,6 +56,10 @@ ISR(TIMER2_COMPA_vect) // TIMER2 interrupt
   mainClock_us++;
   //  PORTC &= ~_BV(debugPin1);
 }
+void togglePin()
+{
+  debugDiode.toggle();
+}
 
 int main()
 {
@@ -67,8 +72,10 @@ int main()
   interval2 = eeprom_read_dword(saved_interval2);
   interval3 = eeprom_read_dword(saved_interval3);
   intervalBuzzer = eeprom_read_dword(saved_intervalBuzzer);
-  eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
+  /* not used - to delete in future
+eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   eeprom_read_block(sequence2, saved_sequence2, SEQUENCE2_SIZE);
+  */
   char uartInputString[64] = "\0";
   char cmdLine[64] = "\0";
   char debugString[120];
@@ -85,6 +92,17 @@ int main()
   display.execute();
 
   //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
+  //classes/object inheritance ability compiler test
   Klasa obiekt(&PORTB, 0, &PORTB, 1);
   uint8_t pinNumber = obiekt.getDioPinNo();
   pinNumber++;
@@ -96,7 +114,46 @@ int main()
   aaaa *= bbbb;
   bbbb = childObject.childMember;
 
-  //end
+  //enum size test
+  int aa = 0;
+  enum tEnum
+  {
+    AAA,
+    BBB,
+    CCC,
+    DDD,
+    EEE,
+    FFF
+  };
+  tEnum enumTest = AAA;
+  switch (enumTest)
+  {
+  case AAA:
+    aa++;
+    break;
+  case BBB:
+    aa--;
+    break;
+  case CCC:
+    aa += 2;
+    break;
+  default:
+    break;
+  }
+
+  //end -----------------ERASE ABOVE ---------------------------------
+  //end -----------------ERASE ABOVE ---------------------------------
+  //end -----------------ERASE ABOVE ---------------------------------
+  //end -----------------ERASE ABOVE ---------------------------------
+  //end -----------------ERASE ABOVE ---------------------------------
+  //end -----------------ERASE ABOVE ---------------------------------
+  //end -----------------ERASE ABOVE ---------------------------------
+  //end -----------------ERASE ABOVE ---------------------------------
+  //end -----------------ERASE ABOVE ---------------------------------
+  //end -----------------ERASE ABOVE ---------------------------------
+
+  Timer testTimera(&mainClock_us_temp, 2000000 / MAIN_CLOCK_TICK);
+  testTimera.registerCallback(&togglePin);
 
   while (1)
   {
@@ -157,7 +214,7 @@ int main()
     }
 
     display.execute();
-
+    testTimera.execute();
     if ((mainClock_us_temp - clk1) >= interval1)
     {
       clk1 = mainClock_us_temp;

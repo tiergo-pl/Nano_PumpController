@@ -6,7 +6,7 @@
 // macros and vars used in software clock
 // remember [extern] statement
 extern volatile uint32_t mainClock_us;      //Software timer incremented by hw timer interrupt - System tick
-extern volatile uint32_t mainClock_us_temp; //Copy of sw timer used in time calculations
+extern uint32_t mainClock_us_temp; //Copy of sw timer used in time calculations
 extern volatile uint32_t mainClock_seconds; //Software counter incremented every 1 second
 extern volatile uint32_t tickAtLastSec;     //Used in 1 second timer calculations
 
@@ -29,6 +29,7 @@ extern uint32_t *saved_interval3;        //and pointer to its saved value
 extern volatile uint32_t intervalBuzzer; // buzzer tone generation
 extern uint32_t *saved_intervalBuzzer;
 
+/* not used - to delete in future
 #define SEQUENCE1_SIZE 0x60
 #define SEQUENCE2_SIZE 0x60
 extern uint8_t sequence1[SEQUENCE1_SIZE]; // array of pwm walues
@@ -39,6 +40,7 @@ extern uint8_t *saved_sequence2;          //pointer to array of pwm values in ee
 #define DISPLAY_SEQ_SIZE 0x200
 extern uint8_t displaySeq[DISPLAY_SEQ_SIZE + 1];
 extern uint8_t *saved_displaySeq;
+*/
 
 extern bool consoleDebugOn; //debugging via serial port (console)
 

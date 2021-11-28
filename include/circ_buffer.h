@@ -7,15 +7,9 @@
 
 class circBuffer
 {
-private:
-  uint8_t tailIndex; // lower end of usable data
-  uint8_t headIndex; // higher end od usable data
-  uint8_t bufSize;
-  bool isFullFlag;
-
 public:
-  char *data;
   circBuffer(uint8_t buf_size, uint8_t startpoint);
+  char *data;
   void write(char cell);
   char read();
   bool isEmpty();
@@ -23,6 +17,13 @@ public:
   bool isFull();
   uint8_t getLength();
   uint8_t getData(char *bufferData);
+
+private:
+  uint8_t tailIndex; // lower end of usable data
+  uint8_t headIndex; // higher end od usable data
+  uint8_t bufSize;
+  bool isFullFlag;
+
 };
 
 #endif

@@ -5,12 +5,6 @@
 
 class Pin
 {
-protected:
-  uint8_t mPinNo;
-  volatile uint8_t *pPort;
-  volatile uint8_t *pDdr;
-  volatile uint8_t *pPin;
-
 public:
   /*Initialize PIN
   *Choose PORTx and PINxy
@@ -31,6 +25,13 @@ public:
   volatile uint8_t *getPort();
   volatile uint8_t *getDdr();
   volatile uint8_t *getPin();
+  
+protected:
+  uint8_t mPinNo;
+  volatile uint8_t *pPort;
+  volatile uint8_t *pDdr;
+  volatile uint8_t *pPin;
+
 };
 
 class Beeper: public Pin
