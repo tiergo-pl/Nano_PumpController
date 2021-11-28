@@ -67,4 +67,6 @@ extern Pin kbUp;
 extern Pin kbDown;
 extern Pin debugDiode;
 
+void debugDiode_toggle();
+
 #endif

@@ -38,3 +38,10 @@ Pin kbMenu(&KB_MENU);
 Pin kbUp(&KB_UP);
 Pin kbDown(&KB_DOWN);
 Pin debugDiode(&PORTD,7);
+
+//needed function wrappers
+/*void debugDiode_toggle()
+{
+  debugDiode.toggle();
+}*/ 
+//No need thanks to Lambdas???

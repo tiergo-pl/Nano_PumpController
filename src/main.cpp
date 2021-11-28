@@ -56,10 +56,6 @@ ISR(TIMER2_COMPA_vect) // TIMER2 interrupt
   mainClock_us++;
   //  PORTC &= ~_BV(debugPin1);
 }
-void togglePin()
-{
-  debugDiode.toggle();
-}
 
 int main()
 {
@@ -152,8 +148,14 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   //end -----------------ERASE ABOVE ---------------------------------
   //end -----------------ERASE ABOVE ---------------------------------
 
-  Timer testTimera(&mainClock_us_temp, 2000000 / MAIN_CLOCK_TICK);
-  testTimera.registerCallback(&togglePin);
+  Timer testTimera(&mainClock_us_temp, 1250000 / MAIN_CLOCK_TICK);
+  //testTimera.registerCallback(&debugDiode_toggle); //needed function wrapper as argument
+  testTimera.registerCallback([]()
+                              { debugDiode.high_PullUp(); }); //Lambda works??
+  Timer testTimera2(&mainClock_us_temp, 2000000 / MAIN_CLOCK_TICK);
+  //testTimera.registerCallback(&debugDiode_toggle); //needed function wrapper as argument
+  testTimera2.registerCallback([]()
+                              { debugDiode.low_HiZ(); }); //Lambda works??
 
   while (1)
   {
@@ -183,22 +185,22 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
         beeper.setBeep(mainClock_us_temp, 20000, 3); //half minute beep
         break;
       case 10:
-        beeper.setBeep(mainClock_us_temp, 30000); //every 10 sec beep
+        //beeper.setBeep(mainClock_us_temp, 30000); //every 10 sec beep
         aeration.outputHigh();
         break;
       case 20:
-        beeper.setBeep(mainClock_us_temp, 20000, 2, 5000); //every 10 sec beep
+        //beeper.setBeep(mainClock_us_temp, 20000, 2, 5000); //every 10 sec beep
         aeration.outputLow();
         break;
       case 40:
-        beeper.setBeep(mainClock_us_temp, 20000, 4, 5000); //every 10 sec beep
+        //beeper.setBeep(mainClock_us_temp, 20000, 4, 5000); //every 10 sec beep
         pump.outputHigh();
         break;
       case 50:
-        beeper.setBeep(mainClock_us_temp, 20000, 5, 10000); //every 10 sec beep
+        //beeper.setBeep(mainClock_us_temp, 20000, 5, 10000); //every 10 sec beep
         break;
       default:
-        beeper.setBeep(mainClock_us_temp, 5000); //default 1 sec beep
+        //beeper.setBeep(mainClock_us_temp, 5000); //default 1 sec beep
         break;
       }
 
@@ -215,6 +217,7 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
 
     display.execute();
     testTimera.execute();
+    testTimera2.execute();
     if ((mainClock_us_temp - clk1) >= interval1)
     {
       clk1 = mainClock_us_temp;
