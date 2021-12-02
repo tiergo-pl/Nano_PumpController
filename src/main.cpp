@@ -25,9 +25,9 @@ void timer_init(void)
 
 void port_init(void)
 {
-  //DDRB = (1 << LED_BUILTIN) | _BV(debugPin3); // Led builtin (13)
-  //DDRC = (1 << debugPin0) | (1 << debugPin1) | (1 << debugPin2) | _BV(Buzzer);
-  //DDRD = ((1 << BEEPER));
+  // DDRB = (1 << LED_BUILTIN) | _BV(debugPin3); // Led builtin (13)
+  // DDRC = (1 << debugPin0) | (1 << debugPin1) | (1 << debugPin2) | _BV(Buzzer);
+  // DDRD = ((1 << BEEPER));
   beeper.outputLow();
   ledBuiltin.outputLow();
   aeration.outputHigh();
@@ -41,7 +41,7 @@ void port_init(void)
 void adc_init()
 {
   ADMUX = 0x67; // Vref = Vcc,ADLAR=1 ,ADC7
-  ADCSRA = 7;   //prescaler /128
+  ADCSRA = 7;   // prescaler /128
   ADCSRA |= _BV(ADEN) | _BV(ADIE) | _BV(ADSC);
 }
 
@@ -56,7 +56,33 @@ ISR(TIMER2_COMPA_vect) // TIMER2 interrupt
   mainClock_us++;
   //  PORTC &= ~_BV(debugPin1);
 }
+void halfSecondRoutine()
+{
+  if (aeration.readOutput())
+  {
+    display.prepareDots(0x01, 1, 0);
+  }
+  else
+  {
+    display.prepareDots(0x0, 1, 0);
+  }
+  if (pump.readOutput())
+  {
+    display.prepareDots(0x01, 1, 1);
+  }
+  else
+  {
+    display.prepareDots(0x0, 1, 1);
+  }
+  if (ledBuiltin.readOutput())
+    display.prepareDots(0, 1, 3);
+  else
+    display.prepareDots(0x01, 1, 3);
+  ledBuiltin.toggle();
+}
 
+// main starts here
+// main starts here
 int main()
 {
   timer_init();
@@ -79,96 +105,35 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   // PORTC |= _BV(debugPin2);
   uint32_t lastSecond = 0;
   uint32_t lastMinute = 0;
-  beeper.setBeep(0, 500000); //initial beep on system start
+  beeper.setBeep(0, 500000); // initial beep on system start
 
-  DisplayTM1637 display(&PORTD, 5, &PORTD, 6);
   uint8_t dispTest[] = {0xff, 0xff, 0xff, 0xff};
   display.prepareSegments(dispTest);
   display.prepareDots(0x0f);
   display.execute();
 
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  //classes/object inheritance ability compiler test
-  Klasa obiekt(&PORTB, 0, &PORTB, 1);
-  uint8_t pinNumber = obiekt.getDioPinNo();
-  pinNumber++;
+  // Prepare one second timer
+  Timer oneSecondTick(&mainClock_us_temp, 1000000 / MAIN_CLOCK_TICK);
+  oneSecondTick.registerCallback(
+      []()
+      { mainClock_seconds++; }); // Lambda function wrapper - gives pointer to function
 
-  BaseClass baseObject;
-  int aaaa = baseObject.getBaseMember();
-  ChildClass childObject;
-  int bbbb = childObject.getMember();
-  aaaa *= bbbb;
-  bbbb = childObject.childMember;
+  // Prepare half second timer
+  Timer halfSecondTick(&mainClock_us_temp, 500000 / MAIN_CLOCK_TICK);
+  halfSecondTick.registerCallback(halfSecondRoutine);
 
-  //enum size test
-  int aa = 0;
-  enum tEnum
-  {
-    AAA,
-    BBB,
-    CCC,
-    DDD,
-    EEE,
-    FFF
-  };
-  tEnum enumTest = AAA;
-  switch (enumTest)
-  {
-  case AAA:
-    aa++;
-    break;
-  case BBB:
-    aa--;
-    break;
-  case CCC:
-    aa += 2;
-    break;
-  default:
-    break;
-  }
-
-  //end -----------------ERASE ABOVE ---------------------------------
-  //end -----------------ERASE ABOVE ---------------------------------
-  //end -----------------ERASE ABOVE ---------------------------------
-  //end -----------------ERASE ABOVE ---------------------------------
-  //end -----------------ERASE ABOVE ---------------------------------
-  //end -----------------ERASE ABOVE ---------------------------------
-  //end -----------------ERASE ABOVE ---------------------------------
-  //end -----------------ERASE ABOVE ---------------------------------
-  //end -----------------ERASE ABOVE ---------------------------------
-  //end -----------------ERASE ABOVE ---------------------------------
-
-  Timer testTimera(&mainClock_us_temp, 1250000 / MAIN_CLOCK_TICK);
-  //testTimera.registerCallback(&debugDiode_toggle); //needed function wrapper as argument
-  testTimera.registerCallback([]()
-                              { debugDiode.high_PullUp(); }); //Lambda works??
-  Timer testTimera2(&mainClock_us_temp, 2000000 / MAIN_CLOCK_TICK);
-  //testTimera.registerCallback(&debugDiode_toggle); //needed function wrapper as argument
-  testTimera2.registerCallback([]()
-                              { debugDiode.low_HiZ(); }); //Lambda works??
-
+  // MAIN PROGRAM LOOP
+  // MAIN PROGRAM LOOP
+  // MAIN PROGRAM LOOP
   while (1)
   {
-
     ATOMIC_BLOCK(ATOMIC_FORCEON)
     {
       mainClock_us_temp = mainClock_us;
     }
-    if ((mainClock_us_temp - tickAtLastSec) >= 1000000 / MAIN_CLOCK_TICK)
-    {
-      tickAtLastSec = mainClock_us_temp;
-      mainClock_seconds++;
-    }
+
+    oneSecondTick.execute(); // increment every second
+
     if (mainClock_seconds - lastSecond)
     {
       lastSecond = mainClock_seconds;
@@ -177,30 +142,30 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
       {
 
       case 60:
-        beeper.setBeep(mainClock_us_temp, 330000); //full minute beep
+        beeper.setBeep(mainClock_us_temp, 330000); // full minute beep
         lastMinute = mainClock_seconds;
         pump.outputLow();
         break;
       case 30:
-        beeper.setBeep(mainClock_us_temp, 20000, 3); //half minute beep
+        beeper.setBeep(mainClock_us_temp, 20000, 3); // half minute beep
         break;
       case 10:
-        //beeper.setBeep(mainClock_us_temp, 30000); //every 10 sec beep
+        // beeper.setBeep(mainClock_us_temp, 30000); //every 10 sec beep
         aeration.outputHigh();
         break;
       case 20:
-        //beeper.setBeep(mainClock_us_temp, 20000, 2, 5000); //every 10 sec beep
+        // beeper.setBeep(mainClock_us_temp, 20000, 2, 5000); //every 10 sec beep
         aeration.outputLow();
         break;
       case 40:
-        //beeper.setBeep(mainClock_us_temp, 20000, 4, 5000); //every 10 sec beep
+        // beeper.setBeep(mainClock_us_temp, 20000, 4, 5000); //every 10 sec beep
         pump.outputHigh();
         break;
       case 50:
-        //beeper.setBeep(mainClock_us_temp, 20000, 5, 10000); //every 10 sec beep
+        // beeper.setBeep(mainClock_us_temp, 20000, 5, 10000); //every 10 sec beep
         break;
       default:
-        //beeper.setBeep(mainClock_us_temp, 5000); //default 1 sec beep
+        // beeper.setBeep(mainClock_us_temp, 5000); //default 1 sec beep
         break;
       }
 
@@ -213,28 +178,30 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
       display.prepareSegments(display.toBcd(mainClock_seconds, dispTest));
       aeration.outputLow();
       pump.outputLow();
+      display.prepareDots(0x0);
     }
 
     display.execute();
-    testTimera.execute();
-    testTimera2.execute();
+    halfSecondTick.execute();
     if ((mainClock_us_temp - clk1) >= interval1)
     {
       clk1 = mainClock_us_temp;
-      //PORTB ^= 1 << LED_BUILTIN;
-      // PORTC ^= _BV(debugPin2);
+      // PORTB ^= 1 << LED_BUILTIN;
+      //  PORTC ^= _BV(debugPin2);
+      /*
       if (ledBuiltin.readOutput())
-        display.prepareDots(0, 3, 1);
+        display.prepareDots(0, 1, 1);
       else
-        display.prepareDots(0x0f, 3, 1);
+        display.prepareDots(0x01, 1, 1);
       ledBuiltin.toggle();
-      //PINB |= _BV(PB5);
+      // PINB |= _BV(PB5);
+      */
     }
     if ((mainClock_us_temp - clk2) >= interval2)
     {
       clk2 = mainClock_us_temp;
-      //PORTD ^= 1 << debugPin0;
-      //aeration.toggle();
+      // PORTD ^= 1 << debugPin0;
+      // aeration.toggle();
       if (!kbUp.readInput())
       {
         debugDiode.high_PullUp();
@@ -252,14 +219,14 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
       }
       //(*debugDiode.getPin()) = ((*debugDiode.getPin()) | _BV(debugDiode.getPinNo())); // why not working??
 
-      //PIND |= _BV(7); // but this work?
+      // PIND |= _BV(7); // but this work?
     }
 
     if ((mainClock_us_temp - clk3) >= interval3)
     {
       clk3 = mainClock_us_temp;
-      //PORTD ^= 1 << debugPin1;
-      //pump.toggle();
+      // PORTD ^= 1 << debugPin1;
+      // pump.toggle();
       if (consoleDebugOn)
       {
         sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",

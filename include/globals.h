@@ -58,6 +58,9 @@ extern bool consoleDebugOn; //debugging via serial port (console)
 //--------------------
 
 #include "pins.h"
+#include "display_TM1637.h"
+
+extern DisplayTM1637 display;
 extern Beeper beeper;
 extern Pin ledBuiltin;
 extern Pin aeration;

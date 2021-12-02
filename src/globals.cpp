@@ -30,6 +30,7 @@ uint8_t *saved_displaySeq = (uint8_t *)0x100;
 
 bool consoleDebugOn = false;
 
+DisplayTM1637 display(&PORTD, 5, &PORTD, 6);
 Beeper beeper(&BEEPER);
 Pin ledBuiltin(&LED_BUILTIN);
 Pin aeration(&AERATION);
