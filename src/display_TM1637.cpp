@@ -142,7 +142,7 @@ uint8_t DisplayTM1637::convertDigit(uint8_t digit)
   return digitToSegment[digit];
 }
 
-uint8_t *DisplayTM1637::toBcd(uint16_t number, uint8_t bcd[], uint8_t base, bool leadingZeros, uint8_t digitCount)
+uint8_t *DisplayTM1637::toBcd(uint16_t number, uint8_t bcd[], uint8_t digitCount, bool leadingZeros, uint8_t base)
 {
   for (int8_t i = digitCount - 1; i >= 0; i--)
   {
@@ -155,10 +155,10 @@ uint8_t *DisplayTM1637::toBcd(uint16_t number, uint8_t bcd[], uint8_t base, bool
 
 void DisplayTM1637::prepareSegments(uint8_t segments[], uint8_t lenght, uint8_t position)
 {
-  for (uint8_t i = position; i < lenght; i++)
+  for (uint8_t i = 0; i < lenght; i++)
   {
-    mSegments[i] &= ~(0b01111111);              //clear only digit segments, leave dots
-    mSegments[i] |= segments[i] & (0b01111111); //set only digit segments, leave dots
+    mSegments[i+position] &= ~(0b01111111);              //clear only digit segments, leave dots
+    mSegments[i+position] |= segments[i] & (0b01111111); //set only digit segments, leave dots
   }
   /*mLenght = lenght;
   mPosition = position;*/

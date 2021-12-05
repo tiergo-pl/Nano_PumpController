@@ -33,7 +33,7 @@ set CLK & DIO pins */
   //convert digit to 7seg
   uint8_t convertDigit(uint8_t digit);
   //convert number to decimal BCD
-  uint8_t *toBcd(uint16_t number, uint8_t bcd[], uint8_t base = 10, bool leadingZeros = false, uint8_t digitCount = 4);
+  uint8_t *toBcd(uint16_t number, uint8_t bcd[], uint8_t digitCount = 4, bool leadingZeros = false, uint8_t base = 10);
   //Prepare display segments to send
   void prepareSegments(uint8_t segments[], uint8_t lenght = 4, uint8_t position = 0);
   /*Prepare display dots to send.

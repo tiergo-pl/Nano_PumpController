@@ -30,8 +30,8 @@ void port_init(void)
   // DDRD = ((1 << BEEPER));
   beeper.outputLow();
   ledBuiltin.outputLow();
-  aeration.outputHigh();
-  pump.outputHigh();
+  aeration.outputLow();
+  pump.outputLow();
   kbMenu.inputPullUp();
   kbUp.inputPullUp();
   kbDown.inputPullUp();
@@ -56,6 +56,7 @@ ISR(TIMER2_COMPA_vect) // TIMER2 interrupt
   mainClock_us++;
   //  PORTC &= ~_BV(debugPin1);
 }
+
 void halfSecondRoutine()
 {
   if (aeration.readOutput())
@@ -68,17 +69,35 @@ void halfSecondRoutine()
   }
   if (pump.readOutput())
   {
-    display.prepareDots(0x01, 1, 1);
+    display.prepareDots(0x01, 1, 3);
   }
   else
   {
-    display.prepareDots(0x0, 1, 1);
+    display.prepareDots(0x0, 1, 3);
   }
   if (ledBuiltin.readOutput())
-    display.prepareDots(0, 1, 3);
+    display.prepareDots(0, 1, 1);
   else
-    display.prepareDots(0x01, 1, 3);
+    display.prepareDots(0x01, 1, 1);
   ledBuiltin.toggle();
+}
+
+void refreshDisplayKeyboardRoutine()
+{
+  // debugDiode.toggle();
+  display.prepareSegments(display.toBcd(minutesLeft, dispContent, 2), 2, 2);
+  display.prepareSegments(display.toBcd(hoursLeft, dispContent, 2), 2, 0);
+}
+void minuteTickDownwardsRoutine()
+{
+  minutesLeft--;
+  if (minutesLeft < 0)
+  {
+    minutesLeft = 59;
+    hoursLeft--;
+    if(hoursLeft<0)
+      hoursLeft = 99;
+  }
 }
 
 // main starts here
@@ -107,8 +126,8 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   uint32_t lastMinute = 0;
   beeper.setBeep(0, 500000); // initial beep on system start
 
-  uint8_t dispTest[] = {0xff, 0xff, 0xff, 0xff};
-  display.prepareSegments(dispTest);
+  // Initial display test
+  display.prepareSegments(dispContent);
   display.prepareDots(0x0f);
   display.execute();
 
@@ -122,6 +141,13 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   Timer halfSecondTick(&mainClock_us_temp, 500000 / MAIN_CLOCK_TICK);
   halfSecondTick.registerCallback(halfSecondRoutine);
 
+  Timer refreshDisplayKeyboard(&mainClock_us_temp, 50000 / MAIN_CLOCK_TICK);
+  refreshDisplayKeyboard.registerCallback(refreshDisplayKeyboardRoutine);
+
+  // MINUTES AND HOURS
+  Timer minuteTickDownwards(&mainClock_seconds, 60); // CHANGE TO 60 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  minuteTickDownwards.registerCallback(minuteTickDownwardsRoutine);
+
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
@@ -131,6 +157,18 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
     {
       mainClock_us_temp = mainClock_us;
     }
+    beeper.beep();
+
+    // reset output states after initial test
+    if (!beeper.isOn() && mainClock_seconds == 0)
+    {
+      display.prepareSegments(display.toBcd(mainClock_seconds, dispContent));
+      aeration.outputLow();
+      pump.outputLow();
+      display.prepareDots(0x0);
+    }
+    else
+      refreshDisplayKeyboard.execute();
 
     oneSecondTick.execute(); // increment every second
 
@@ -169,17 +207,11 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
         break;
       }
 
-      display.prepareSegments(display.toBcd(mainClock_seconds, dispTest));
+      // display.prepareSegments(display.toBcd(minutesLeft, dispContent, 2), 2);
     }
 
-    beeper.beep();
-    if (!beeper.isOn() && mainClock_seconds == 0)
-    {
-      display.prepareSegments(display.toBcd(mainClock_seconds, dispTest));
-      aeration.outputLow();
-      pump.outputLow();
-      display.prepareDots(0x0);
-    }
+
+    minuteTickDownwards.execute();
 
     display.execute();
     halfSecondTick.execute();

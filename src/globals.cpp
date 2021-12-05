@@ -2,8 +2,10 @@
 
 volatile uint32_t mainClock_us = 0; //Software counter incremented by timer interrupt
 uint32_t mainClock_us_temp=0;
-volatile uint32_t mainClock_seconds = 0; //Software counter incremented every 1 second
-volatile uint32_t tickAtLastSec = 0;     //Used in 1 second timer calculations
+uint32_t mainClock_seconds = 0; //Software counter incremented every 1 second
+uint32_t tickAtLastSec = 0;     //Used in 1 second timer calculations
+int8_t minutesLeft = 10;
+int8_t hoursLeft = 3;
 
 volatile uint32_t clk1 = 0;
 volatile uint32_t clk2 = 0;
@@ -31,6 +33,7 @@ uint8_t *saved_displaySeq = (uint8_t *)0x100;
 bool consoleDebugOn = false;
 
 DisplayTM1637 display(&PORTD, 5, &PORTD, 6);
+uint8_t dispContent[] = {0xff, 0xff, 0xff, 0xff};
 Beeper beeper(&BEEPER);
 Pin ledBuiltin(&LED_BUILTIN);
 Pin aeration(&AERATION);
