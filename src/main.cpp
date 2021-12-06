@@ -95,8 +95,8 @@ void minuteTickDownwardsRoutine()
   {
     minutesLeft = 59;
     hoursLeft--;
-    if(hoursLeft<0)
-      hoursLeft = 99;
+    if (hoursLeft < 0)
+      hoursLeft = 10; // Max hours
   }
 }
 
@@ -144,9 +144,7 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   Timer refreshDisplayKeyboard(&mainClock_us_temp, 50000 / MAIN_CLOCK_TICK);
   refreshDisplayKeyboard.registerCallback(refreshDisplayKeyboardRoutine);
 
-  // MINUTES AND HOURS
-  Timer minuteTickDownwards(&mainClock_seconds, 60); // CHANGE TO 60 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  minuteTickDownwards.registerCallback(minuteTickDownwardsRoutine);
+  StateMachine mainStateMachine;
 
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
@@ -210,9 +208,7 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
       // display.prepareSegments(display.toBcd(minutesLeft, dispContent, 2), 2);
     }
 
-
-    minuteTickDownwards.execute();
-
+    mainStateMachine.execute();
     display.execute();
     halfSecondTick.execute();
     if ((mainClock_us_temp - clk1) >= interval1)

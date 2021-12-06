@@ -1,5 +1,5 @@
-#ifndef _globals_h_
-#define _globals_h_
+#ifndef _GLOBALS_H_
+#define _GLOBALS_H_
 
 #include <stdint.h>
 //-----------------------------
@@ -61,6 +61,7 @@ extern bool consoleDebugOn; //debugging via serial port (console)
 
 #include "pins.h"
 #include "display_TM1637.h"
+//#include "timer.h"
 
 extern DisplayTM1637 display;
 extern uint8_t dispContent[];
@@ -74,6 +75,8 @@ extern Pin kbUp;
 extern Pin kbDown;
 extern Pin debugDiode;
 
+
 void debugDiode_toggle();
 
-#endif
+
+#endif // _GLOBALS_H_

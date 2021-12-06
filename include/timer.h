@@ -11,7 +11,7 @@ public:
   bool isActive();
   void setDuration(const uint32_t &mDuration_);
   void registerCallback(void (*func)());
-  void execute();
+  bool execute();
 
 private:
   const uint32_t *pClockSource;
@@ -21,6 +21,32 @@ private:
   uint32_t mStartPoint = 0;
   uint32_t mDuration;
   void (*callback)();
+};
+
+class StateMachine
+{
+public:
+  StateMachine();
+  bool execute();  
+  void start();
+  void hold();
+  void resume();
+  void nextState();
+  void previousState();
+
+private:
+  enum State
+  {
+    stateHold = 0,
+    stateAeration,
+    stateAfterAeration,
+    statePumping,
+    stateAfterPumping
+  };
+  State currentState = stateHold;
+  State holdedState = stateAeration;
+  bool transition = false;
+  int8_t timer[(int)stateAfterPumping][2];
 };
 
 #endif // _TIMER_H_
