@@ -7,13 +7,15 @@
 #include <util/delay.h>
 #include <avr/eeprom.h>
 
-#include "globals.h"
 #include "uart.h"
 #include "debug.h"
 #include "parse.h"
 #include "display_TM1637.h"
 #include "timer.h"
+#include "globals.h"
 //#include "pins.h"
+
+StateMachine mainStateMachine;
 
 void timer_init(void)
 {
@@ -84,6 +86,25 @@ void halfSecondRoutine()
 
 void refreshDisplayKeyboardRoutine()
 {
+  if (!kbUp.readInput())
+  {
+    mainStateMachine.previousState();
+    debugDiode.high_PullUp();
+    beeper.beepOnce();
+  }
+  if (!kbDown.readInput())
+  {
+    mainStateMachine.nextState();
+    debugDiode.low_HiZ();
+    beeper.beepOnce();
+  }
+  if (!kbMenu.readInput())
+  {
+    mainStateMachine.toggle();
+    debugDiode.toggle();
+    beeper.beepTwice();
+  }
+
   // debugDiode.toggle();
   display.prepareSegments(display.toBcd(minutesLeft, dispContent, 2), 2, 2);
   display.prepareSegments(display.toBcd(hoursLeft, dispContent, 2), 2, 0);
@@ -93,10 +114,10 @@ void minuteTickDownwardsRoutine()
   minutesLeft--;
   if (minutesLeft < 0)
   {
-    minutesLeft = 59;
+    minutesLeft = 11; //CHANGE THIS TO 59 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     hoursLeft--;
     if (hoursLeft < 0)
-      hoursLeft = 10; // Max hours
+      mainStateMachine.transit();
   }
 }
 
@@ -121,9 +142,6 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   char cmdLine[64] = "\0";
   char debugString[120];
 
-  // PORTC |= _BV(debugPin2);
-  uint32_t lastSecond = 0;
-  uint32_t lastMinute = 0;
   beeper.setBeep(0, 500000); // initial beep on system start
 
   // Initial display test
@@ -141,10 +159,12 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   Timer halfSecondTick(&mainClock_us_temp, 500000 / MAIN_CLOCK_TICK);
   halfSecondTick.registerCallback(halfSecondRoutine);
 
-  Timer refreshDisplayKeyboard(&mainClock_us_temp, 50000 / MAIN_CLOCK_TICK);
+  Timer refreshDisplayKeyboard(&mainClock_us_temp, 200000 / MAIN_CLOCK_TICK);
   refreshDisplayKeyboard.registerCallback(refreshDisplayKeyboardRoutine);
 
-  StateMachine mainStateMachine;
+  // MINUTES AND HOURS
+  Timer minuteTickDownwards(&mainClock_us_temp, 20000); // CHANGE TO (&mainClock_seconds, 60) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  minuteTickDownwards.registerCallback(minuteTickDownwardsRoutine);
 
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
@@ -164,50 +184,16 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
       aeration.outputLow();
       pump.outputLow();
       display.prepareDots(0x0);
+      if (mainClock_us_temp > 95000)
+        mainStateMachine.start();
     }
     else
       refreshDisplayKeyboard.execute();
 
     oneSecondTick.execute(); // increment every second
 
-    if (mainClock_seconds - lastSecond)
-    {
-      lastSecond = mainClock_seconds;
-      uint8_t secondsPassedInLastMinute = mainClock_seconds - lastMinute;
-      switch (secondsPassedInLastMinute)
-      {
 
-      case 60:
-        beeper.setBeep(mainClock_us_temp, 330000); // full minute beep
-        lastMinute = mainClock_seconds;
-        pump.outputLow();
-        break;
-      case 30:
-        beeper.setBeep(mainClock_us_temp, 20000, 3); // half minute beep
-        break;
-      case 10:
-        // beeper.setBeep(mainClock_us_temp, 30000); //every 10 sec beep
-        aeration.outputHigh();
-        break;
-      case 20:
-        // beeper.setBeep(mainClock_us_temp, 20000, 2, 5000); //every 10 sec beep
-        aeration.outputLow();
-        break;
-      case 40:
-        // beeper.setBeep(mainClock_us_temp, 20000, 4, 5000); //every 10 sec beep
-        pump.outputHigh();
-        break;
-      case 50:
-        // beeper.setBeep(mainClock_us_temp, 20000, 5, 10000); //every 10 sec beep
-        break;
-      default:
-        // beeper.setBeep(mainClock_us_temp, 5000); //default 1 sec beep
-        break;
-      }
-
-      // display.prepareSegments(display.toBcd(minutesLeft, dispContent, 2), 2);
-    }
-
+    minuteTickDownwards.execute(mainStateMachine.isRunning());
     mainStateMachine.execute();
     display.execute();
     halfSecondTick.execute();
@@ -228,33 +214,12 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
     if ((mainClock_us_temp - clk2) >= interval2)
     {
       clk2 = mainClock_us_temp;
-      // PORTD ^= 1 << debugPin0;
-      // aeration.toggle();
-      if (!kbUp.readInput())
-      {
-        debugDiode.high_PullUp();
-        beeper.beepOnce();
-      }
-      if (!kbDown.readInput())
-      {
-        debugDiode.low_HiZ();
-        beeper.beepOnce();
-      }
-      if (!kbMenu.readInput())
-      {
-        debugDiode.toggle();
-        beeper.beepTwice();
-      }
-      //(*debugDiode.getPin()) = ((*debugDiode.getPin()) | _BV(debugDiode.getPinNo())); // why not working??
 
-      // PIND |= _BV(7); // but this work?
     }
 
     if ((mainClock_us_temp - clk3) >= interval3)
     {
       clk3 = mainClock_us_temp;
-      // PORTD ^= 1 << debugPin1;
-      // pump.toggle();
       if (consoleDebugOn)
       {
         sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",

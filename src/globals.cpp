@@ -1,21 +1,21 @@
 #include "globals.h"
 
-volatile uint32_t mainClock_us = 0; //Software counter incremented by timer interrupt
-uint32_t mainClock_us_temp=0;
-uint32_t mainClock_seconds = 0; //Software counter incremented every 1 second
-uint32_t tickAtLastSec = 0;     //Used in 1 second timer calculations
-int8_t minutesLeft = 10;
-int8_t hoursLeft = 3;
+volatile uint32_t mainClock_us = 0; // Software counter incremented by timer interrupt
+uint32_t mainClock_us_temp = 0;
+uint32_t mainClock_seconds = 0; // Software counter incremented every 1 second
+uint32_t tickAtLastSec = 0;     // Used in 1 second timer calculations
+int8_t minutesLeft = 59;
+int8_t hoursLeft = 23;
 
 volatile uint32_t clk1 = 0;
 volatile uint32_t clk2 = 0;
 volatile uint32_t clk3 = 0;
-volatile uint32_t interval1;               //use variable for mutable value readable from eeprom
-uint32_t *saved_interval1 = (uint32_t *)0; //and pointer to its saved value
-volatile uint32_t interval2;               //use variable for mutable value readable from eeprom
-uint32_t *saved_interval2 = (uint32_t *)4; //and pointer to its saved value
-volatile uint32_t interval3;               //use variable for mutable value readable from eeprom
-uint32_t *saved_interval3                 /* = (uint32_t *)8*/; //and pointer to its saved value
+volatile uint32_t interval1;                    // use variable for mutable value readable from eeprom
+uint32_t *saved_interval1 = (uint32_t *)0;      // and pointer to its saved value
+volatile uint32_t interval2;                    // use variable for mutable value readable from eeprom
+uint32_t *saved_interval2 = (uint32_t *)4;      // and pointer to its saved value
+volatile uint32_t interval3;                    // use variable for mutable value readable from eeprom
+uint32_t *saved_interval3 /* = (uint32_t *)8*/; // and pointer to its saved value
 
 volatile uint32_t clkBuzzer;
 volatile uint32_t intervalBuzzer;
@@ -41,11 +41,11 @@ Pin pump(&PUMP);
 Pin kbMenu(&KB_MENU);
 Pin kbUp(&KB_UP);
 Pin kbDown(&KB_DOWN);
-Pin debugDiode(&PORTD,7);
+Pin debugDiode(&PORTD, 7);
+//StateMachine mainStateMachine;
 
 // needed function wrappers
 /*void debugDiode_toggle()
 {
   debugDiode.toggle();
 }*/
-// No need thanks to Lambdas???

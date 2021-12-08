@@ -24,9 +24,9 @@ void Timer::registerCallback(void (*func)())
   callback = func;
 }
 
-bool Timer::execute()
+bool Timer::execute(bool run)
 {
-  if ((*pClockSource - mStartPoint) >= mDuration)
+  if (((*pClockSource - mStartPoint) >= mDuration) && run)
   {
     mStartPoint = *pClockSource;
     if (callback != nullptr)
@@ -40,39 +40,59 @@ bool Timer::execute()
 
 StateMachine::StateMachine()
 {
-  timer[stateAeration][0] = 3;       // Hours
-  timer[stateAeration][1] = 15;      // Minutes
-  timer[stateAfterAeration][0] = 1;  // Hours
-  timer[stateAfterAeration][1] = 30; // Minutes
-  timer[statePumping][0] = 0;        // Hours
-  timer[statePumping][1] = 45;       // Minutes
-  timer[stateAfterPumping][0] = 2;   // Hours
-  timer[stateAfterPumping][1] = 20;  // Minutes
+  timer[stateAeration][0] = 4;      // Hours
+  timer[stateAeration][1] = 4;      // Minutes
+  timer[stateAfterAeration][0] = 2; // Hours
+  timer[stateAfterAeration][1] = 5; // Minutes
+  timer[statePumping][0] = 8;       // Hours
+  timer[statePumping][1] = 6;       // Minutes
+  timer[stateAfterPumping][0] = 12; // Hours
+  timer[stateAfterPumping][1] = 7;  // Minutes
 }
 
 bool StateMachine::execute()
 {
-  if (currentState != stateHold)
+  if ((currentState != stateHold) && (toUpdate))
   {
+    if (transition)
+    {
+      nextState();
+      transition = false;
+    }
     switch (currentState)
     {
     case stateAeration:
       aeration.high_PullUp();
+      pump.low_HiZ();
+      // hoursLeft = timer[stateAeration][0];
+      // minutesLeft = timer[stateAeration][1];
       break;
     case stateAfterAeration:
-      /* code */
+      aeration.low_HiZ();
+      pump.low_HiZ();
+      // hoursLeft = timer[stateAfterAeration][0];
+      // minutesLeft = timer[stateAfterAeration][1];
       break;
     case statePumping:
-      /* code */
+      aeration.low_HiZ();
+      pump.high_PullUp();
+      // hoursLeft = timer[statePumping][0];
+      // minutesLeft = timer[statePumping][1];
       break;
     case stateAfterPumping:
-      /* code */
+      aeration.low_HiZ();
+      pump.low_HiZ();
+      // hoursLeft = timer[stateAfterPumping][0];
+      // minutesLeft = timer[stateAfterPumping][1];
       break;
 
     default:
       break;
     }
-
+    // debugDiode.toggle();
+    hoursLeft = timer[currentState][0];
+    minutesLeft = timer[currentState][1];
+    toUpdate = false;
     return true;
   }
   else
@@ -81,18 +101,31 @@ bool StateMachine::execute()
 
 void StateMachine::start()
 {
-  State holdedState = stateAeration;
+  currentState = stateAeration;
+  update();
 }
 
 void StateMachine::hold()
 {
-  holdedState = currentState;
-  currentState = stateHold;
+  if (currentState != stateHold)
+  {
+    holdedState = currentState;
+    currentState = stateHold;
+  }
 }
 
 void StateMachine::resume()
 {
-  currentState = holdedState;
+  if (currentState == stateHold)
+    currentState = holdedState;
+}
+
+void StateMachine::toggle()
+{
+  if (currentState == stateHold)
+    resume();
+  else
+    hold();
 }
 
 void StateMachine::nextState()
@@ -115,6 +148,7 @@ void StateMachine::nextState()
   default:
     break;
   }
+  update();
 }
 
 void StateMachine::previousState()
@@ -137,4 +171,24 @@ void StateMachine::previousState()
   default:
     break;
   }
+  update();
+}
+
+bool StateMachine::isRunning()
+{
+  if (currentState == stateHold)
+    return false;
+  else
+    return true;
+}
+
+void StateMachine::transit()
+{
+  transition = true;
+  update();
+}
+
+void StateMachine::update()
+{
+  toUpdate = true;
 }

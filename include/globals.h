@@ -2,6 +2,8 @@
 #define _GLOBALS_H_
 
 #include <stdint.h>
+
+
 //-----------------------------
 // macros and vars used in software clock
 // remember [extern] statement
@@ -61,7 +63,7 @@ extern bool consoleDebugOn; //debugging via serial port (console)
 
 #include "pins.h"
 #include "display_TM1637.h"
-//#include "timer.h"
+#include "timer.h"
 
 extern DisplayTM1637 display;
 extern uint8_t dispContent[];
@@ -74,9 +76,9 @@ extern Pin kbMenu;
 extern Pin kbUp;
 extern Pin kbDown;
 extern Pin debugDiode;
+//extern StateMachine mainStateMachine;
 
-
-void debugDiode_toggle();
+//void debugDiode_toggle();
 
 
 #endif // _GLOBALS_H_
