@@ -23,12 +23,12 @@ Pin::Pin(volatile uint8_t *port, uint8_t pinNo)
 }
 void Pin::inputHiZ()
 {
-  *pDdr &= ~_BV(mPinNo); //input
+  *pDdr &= ~_BV(mPinNo); // input
   low_HiZ();
 }
 void Pin::inputPullUp()
 {
-  *pDdr &= ~_BV(mPinNo); //input
+  *pDdr &= ~_BV(mPinNo); // input
   high_PullUp();
 }
 void Pin::low_HiZ()
@@ -41,12 +41,12 @@ void Pin::high_PullUp()
 }
 void Pin::outputLow()
 {
-  *pDdr |= _BV(mPinNo); //output
+  *pDdr |= _BV(mPinNo); // output
   low_HiZ();
 }
 void Pin::outputHigh()
 {
-  *pDdr |= _BV(mPinNo); //output
+  *pDdr |= _BV(mPinNo); // output
   high_PullUp();
 }
 void Pin::toggle()
@@ -85,9 +85,9 @@ void Beeper::setBeep(uint32_t startTime, uint32_t duration, uint8_t repeatCount,
   end = startTime + duration / MAIN_CLOCK_TICK;
   repeat = repeatCount;
   if (pauseDuration)
-    pause = pauseDuration;
+    pause = pauseDuration / MAIN_CLOCK_TICK;
   else
-    pause = duration;
+    pause = duration / MAIN_CLOCK_TICK;
 }
 void Beeper::beep()
 {
@@ -114,20 +114,20 @@ void Beeper::beep()
 }
 void Beeper::beepOnce()
 {
-  setBeep(mainClock_us_temp, 20000);
+  setBeep(mainClock_us_temp + 10000, 50000);
 }
 void Beeper::beepTwice()
 {
-  setBeep(mainClock_us_temp, 20000, 2);
+  setBeep(mainClock_us_temp + 10000, 50000, 2);
 }
 void Beeper::setOn()
 {
-  //PORTD |= _BV(BEEPER);
+  // PORTD |= _BV(BEEPER);
   high_PullUp();
 }
 void Beeper::setOff()
 {
-  //PORTD &= ~_BV(BEEPER);
+  // PORTD &= ~_BV(BEEPER);
   low_HiZ();
 }
 uint32_t Beeper::getStart()
@@ -141,4 +141,41 @@ uint32_t Beeper::getEnd()
 bool Beeper::isOn()
 {
   return readOutput();
+}
+
+void Key::registerCallback(void (*func)(), uint8_t keyFunction)
+{
+  switch (keyFunction)
+  {
+  case 1:
+    longPressCallback = func;
+    break;
+
+  default:
+    shortPressCallback = func;
+    break;
+  }
+}
+
+bool Key::execute()
+{
+  if (!readInput() && (keyState == 0))
+  {
+    keyState = 1; // predebounce
+  }
+  if (!readInput() && (keyState == 1))
+  {
+    keyState = 2; // debounced key, no function yet
+  }
+  if (readInput() && (keyState == 2))
+  {
+    keyState = 0; // debounced and short press
+
+    if (shortPressCallback != nullptr)
+    {
+      shortPressCallback();
+      return true;
+    }
+  }
+  return false;
 }

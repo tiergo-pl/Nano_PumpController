@@ -86,7 +86,7 @@ void halfSecondRoutine()
 
 void refreshDisplayKeyboardRoutine()
 {
-  if (!kbUp.readInput())
+  /*if (!kbUp.readInput())
   {
     mainStateMachine.previousState();
     debugDiode.high_PullUp();
@@ -103,8 +103,10 @@ void refreshDisplayKeyboardRoutine()
     mainStateMachine.toggle();
     debugDiode.toggle();
     beeper.beepTwice();
-  }
-
+  }*/
+  kbMenu.execute();
+  kbUp.execute();
+  kbDown.execute();
   // debugDiode.toggle();
   display.prepareSegments(display.toBcd(minutesLeft, dispContent, 2), 2, 2);
   display.prepareSegments(display.toBcd(hoursLeft, dispContent, 2), 2, 0);
@@ -114,7 +116,7 @@ void minuteTickDownwardsRoutine()
   minutesLeft--;
   if (minutesLeft < 0)
   {
-    minutesLeft = 11; //CHANGE THIS TO 59 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    minutesLeft = 11; // CHANGE THIS TO 59 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     hoursLeft--;
     if (hoursLeft < 0)
       mainStateMachine.transit();
@@ -159,12 +161,37 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   Timer halfSecondTick(&mainClock_us_temp, 500000 / MAIN_CLOCK_TICK);
   halfSecondTick.registerCallback(halfSecondRoutine);
 
-  Timer refreshDisplayKeyboard(&mainClock_us_temp, 200000 / MAIN_CLOCK_TICK);
+  Timer refreshDisplayKeyboard(&mainClock_us_temp, 40000 / MAIN_CLOCK_TICK);
   refreshDisplayKeyboard.registerCallback(refreshDisplayKeyboardRoutine);
 
   // MINUTES AND HOURS
   Timer minuteTickDownwards(&mainClock_us_temp, 20000); // CHANGE TO (&mainClock_seconds, 60) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   minuteTickDownwards.registerCallback(minuteTickDownwardsRoutine);
+
+  kbMenu.registerCallback(
+      []()
+      {
+        mainStateMachine.toggle();
+        debugDiode.toggle();
+        beeper.beepTwice();
+      },
+      0);
+  kbUp.registerCallback(
+      []()
+      {
+        mainStateMachine.previousState();
+        debugDiode.high_PullUp();
+        beeper.beepOnce();
+      },
+      0);
+  kbDown.registerCallback(
+      []()
+      {
+        mainStateMachine.nextState();
+        debugDiode.low_HiZ();
+        beeper.beepOnce();
+      },
+      0);
 
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
@@ -192,7 +219,6 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
 
     oneSecondTick.execute(); // increment every second
 
-
     minuteTickDownwards.execute(mainStateMachine.isRunning());
     mainStateMachine.execute();
     display.execute();
@@ -214,7 +240,6 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
     if ((mainClock_us_temp - clk2) >= interval2)
     {
       clk2 = mainClock_us_temp;
-
     }
 
     if ((mainClock_us_temp - clk3) >= interval3)

@@ -38,9 +38,9 @@ Beeper beeper(&BEEPER);
 Pin ledBuiltin(&LED_BUILTIN);
 Pin aeration(&AERATION);
 Pin pump(&PUMP);
-Pin kbMenu(&KB_MENU);
-Pin kbUp(&KB_UP);
-Pin kbDown(&KB_DOWN);
+Key kbMenu(&KB_MENU);
+Key kbUp(&KB_UP);
+Key kbDown(&KB_DOWN);
 Pin debugDiode(&PORTD, 7);
 //StateMachine mainStateMachine;
 

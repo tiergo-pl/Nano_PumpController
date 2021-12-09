@@ -72,9 +72,9 @@ extern Beeper beeper;
 extern Pin ledBuiltin;
 extern Pin aeration;
 extern Pin pump;
-extern Pin kbMenu;
-extern Pin kbUp;
-extern Pin kbDown;
+extern Key kbMenu;
+extern Key kbUp;
+extern Key kbDown;
 extern Pin debugDiode;
 //extern StateMachine mainStateMachine;
 

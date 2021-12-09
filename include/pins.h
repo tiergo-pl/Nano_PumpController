@@ -1,23 +1,23 @@
-#ifndef _pins_h_
-#define _pins_h_
-
+#ifndef _PINS_H_
+#define _PINS_H_
+#pragma once
 #include <avr/io.h>
 
 class Pin
 {
 public:
-  /*Initialize PIN
-  *Choose PORTx and PINxy
-  *@param port eeeee
-  *@param pinNo fffff*/
+  /*Initialize PIN.
+   *Choose PORTx and PINxy
+   *@param port Port name, e.g. PORTD
+   *@param pinNo Pin number of port, e.g. PD2 or just 2 */
   Pin(volatile uint8_t *port, uint8_t pinNo);
   void inputHiZ();
   void inputPullUp();
-  void low_HiZ();     //switch output to Low or input to Hi-Z
-  void high_PullUp(); //switch output to High or input to Pull-Up
+  void low_HiZ();     // switch output to Low or input to Hi-Z
+  void high_PullUp(); // switch output to High or input to Pull-Up
   void outputLow();
   void outputHigh();
-  void toggle(); //toggle PORT register - toggle output level or input pull-up resistor
+  void toggle(); // toggle PORT register - toggle output level or input pull-up resistor
   bool readInput();
   bool readOutput();
 
@@ -25,16 +25,15 @@ public:
   volatile uint8_t *getPort();
   volatile uint8_t *getDdr();
   volatile uint8_t *getPin();
-  
+
 protected:
   uint8_t mPinNo;
   volatile uint8_t *pPort;
   volatile uint8_t *pDdr;
   volatile uint8_t *pPin;
-
 };
 
-class Beeper: public Pin
+class Beeper : public Pin
 {
 private:
   bool isActivated;
@@ -56,4 +55,18 @@ public:
   bool isOn();
 };
 
-#endif // !_pins_h_
+class Key : public Pin
+{
+public:
+  // keyFunction: 0-short press, 1-long press,
+  void registerCallback(void (*func)(), uint8_t keyFunction = 0);
+  bool execute();
+
+private:
+  using Pin::Pin;
+  uint8_t keyState = 0; 
+  void (*shortPressCallback)();
+  void (*longPressCallback)();
+};
+
+#endif // _PINS_H_
