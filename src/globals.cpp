@@ -42,7 +42,7 @@ Key kbMenu(&KB_MENU);
 Key kbUp(&KB_UP);
 Key kbDown(&KB_DOWN);
 Pin debugDiode(&PORTD, 7);
-//StateMachine mainStateMachine;
+//StateMachine mainProgramState(false);
 
 // needed function wrappers
 /*void debugDiode_toggle()

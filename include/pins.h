@@ -58,15 +58,22 @@ public:
 class Key : public Pin
 {
 public:
-  // keyFunction: 0-short press, 1-long press,
+  using Pin::Pin;
+  /**
+   * @brief Feed Key:: object with functions.
+   * @param keyFunction 0-short press, 1-long press, 2-long pressing, 3 very long press
+   */
   void registerCallback(void (*func)(), uint8_t keyFunction = 0);
   bool execute();
 
 private:
-  using Pin::Pin;
-  uint8_t keyState = 0; 
+  uint8_t keyState = 0;
+  uint8_t pressTime = 0;
   void (*shortPressCallback)();
   void (*longPressCallback)();
+  void (*longPressingCallback)();
+  void (*veryLongPressCallback)();
+  bool pressed();
 };
 
 #endif // _PINS_H_

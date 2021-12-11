@@ -151,6 +151,14 @@ void Key::registerCallback(void (*func)(), uint8_t keyFunction)
     longPressCallback = func;
     break;
 
+  case 2:
+    longPressingCallback = func;
+    break;
+
+  case 3:
+    veryLongPressCallback = func;
+    break;
+
   default:
     shortPressCallback = func;
     break;
@@ -159,23 +167,83 @@ void Key::registerCallback(void (*func)(), uint8_t keyFunction)
 
 bool Key::execute()
 {
-  if (!readInput() && (keyState == 0))
+  if (pressed() && (keyState == 0))
   {
     keyState = 1; // predebounce
   }
-  if (!readInput() && (keyState == 1))
+  if (pressed() && (keyState == 1))
   {
     keyState = 2; // debounced key, no function yet
   }
-  if (readInput() && (keyState == 2))
+  if (pressed() && (keyState == 2))
   {
-    keyState = 0; // debounced and short press
+    pressTime++;                                                // measure press lenght
+    if (pressTime > KB_LONG_PRESS_DURATION / KB_REFRESH_PERIOD) // number of keyboard readouts when long pressed
+      keyState = 3;
+  }
+  if (pressed() && (keyState == 3))
+  {
+    pressTime++;
+    if (pressTime > KB_VERYLONG_PRESS_DURATION / KB_REFRESH_PERIOD) // number of keyboard readouts when very long pressed
+      keyState = 4;
+  }
+  if ((keyState == 5)) // temporary keyboard blocking
+  {
+    if (pressTime < KB_BLOCK_DURATION/KB_REFRESH_PERIOD) // blocking time in keyboard readouts
+      pressTime++;
+    else
+    {
+      keyState = 0;
+      pressTime = 0;
+    }
+  }
+
+  if (!pressed() && (keyState == 2)) // debounced and short press
+  {
+    keyState = 0;
 
     if (shortPressCallback != nullptr)
     {
       shortPressCallback();
-      return true;
+    }
+    pressTime = 0;
+    return true;
+  }
+
+  if (!pressed() && (keyState == 3)) // debounced and long press
+  {
+    keyState = 0;
+
+    if (longPressCallback != nullptr)
+    {
+      longPressCallback();
+    }
+    pressTime = 0;
+    return true;
+  }
+
+  if (pressed() && (keyState == 3)) // long pressing
+  {
+    if (longPressingCallback != nullptr)
+    {
+      longPressingCallback();
     }
   }
+
+  if (pressed() && (keyState == 4)) // very long press
+  {
+    keyState = 5;
+    if (veryLongPressCallback != nullptr)
+    {
+      veryLongPressCallback();
+    }
+    pressTime = 0;
+    return true;
+  }
   return false;
+}
+
+bool Key::pressed()
+{
+  return !readInput();
 }

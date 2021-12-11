@@ -45,13 +45,14 @@ private:
     stateAeration,
     stateAfterAeration,
     statePumping,
-    stateAfterPumping
+    stateAfterPumping,
+    endOfEnum
   };
   State currentState = stateHold;
   State holdedState = stateAeration;
   bool transition = false;
   bool toUpdate = false;
-  int8_t timer[(int)stateAfterPumping + 1][2];
+  int8_t timer[(int)endOfEnum][2];
 };
 
 #endif // _TIMER_H_

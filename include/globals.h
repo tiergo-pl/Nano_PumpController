@@ -3,14 +3,13 @@
 
 #include <stdint.h>
 
-
 //-----------------------------
 // macros and vars used in software clock
 // remember [extern] statement
-extern volatile uint32_t mainClock_us;      //Software timer incremented by hw timer interrupt - System tick
-extern uint32_t mainClock_us_temp; //Copy of sw timer used in time calculations
-extern uint32_t mainClock_seconds; //Software counter incremented every 1 second
-extern uint32_t tickAtLastSec;     //Used in 1 second timer calculations
+extern volatile uint32_t mainClock_us; // Software timer incremented by hw timer interrupt - System tick
+extern uint32_t mainClock_us_temp;     // Copy of sw timer used in time calculations
+extern uint32_t mainClock_seconds;     // Software counter incremented every 1 second
+extern uint32_t tickAtLastSec;         // Used in 1 second timer calculations
 extern int8_t minutesLeft;
 extern int8_t hoursLeft;
 
@@ -21,15 +20,15 @@ extern volatile uint32_t clkBuzzer; // buzzer tone generation
 #define MAIN_CLOCK_TICK 10          // 1 tick of mainClock_us duration in microseconds (max 128 due to hw limitations)
 // set following values in microsecs.:
 //#define interval1 500000 / MAIN_CLOCK_TICK     //use macro for constant OR:
-//uint32_t interval1 = 500000 / MAIN_CLOCK_TICK; //use variable for mutable value OR:
-extern volatile uint32_t interval1; //use variable for mutable value readable from eeprom
-extern uint32_t *saved_interval1;   //and pointer to its saved value
+// uint32_t interval1 = 500000 / MAIN_CLOCK_TICK; //use variable for mutable value OR:
+extern volatile uint32_t interval1; // use variable for mutable value readable from eeprom
+extern uint32_t *saved_interval1;   // and pointer to its saved value
 //#define interval2 1000000 / MAIN_CLOCK_TICK
 //#define interval3 55500 / MAIN_CLOCK_TICK
-extern volatile uint32_t interval2;      //use variable for mutable value readable from eeprom
-extern uint32_t *saved_interval2;        //and pointer to its saved value
-extern volatile uint32_t interval3;      //use variable for mutable value readable from eeprom
-extern uint32_t *saved_interval3;        //and pointer to its saved value
+extern volatile uint32_t interval2;      // use variable for mutable value readable from eeprom
+extern uint32_t *saved_interval2;        // and pointer to its saved value
+extern volatile uint32_t interval3;      // use variable for mutable value readable from eeprom
+extern uint32_t *saved_interval3;        // and pointer to its saved value
 extern volatile uint32_t intervalBuzzer; // buzzer tone generation
 extern uint32_t *saved_intervalBuzzer;
 
@@ -46,20 +45,28 @@ extern uint8_t displaySeq[DISPLAY_SEQ_SIZE + 1];
 extern uint8_t *saved_displaySeq;
 */
 
-extern bool consoleDebugOn; //debugging via serial port (console)
+extern bool consoleDebugOn; // debugging via serial port (console)
 
 //-----------------------
 // used gpio pins
-#define LED_BUILTIN PORTB,PB5
-#define AERATION PORTD,PD2
-#define PUMP PORTD,PD3
-#define KB_MENU PORTB,0
-#define KB_UP PORTB,1
-#define KB_DOWN PORTB,2
+#define LED_BUILTIN PORTB, PB5
+#define AERATION PORTD, PD2
+#define PUMP PORTD, PD3
+#define KB_MENU PORTB, 0
+#define KB_UP PORTB, 1
+#define KB_DOWN PORTB, 2
 
-#define BEEPER PORTD,PD4
+#define BEEPER PORTD, PD4
 // #define Buzzer PC3
+
+#define KB_REFRESH_PERIOD 40 //in miliseconds
+#define KB_LONG_PRESS_DURATION 500 //in miliseconds
+#define KB_VERYLONG_PRESS_DURATION 3000 // in miliseconds
+#define KB_BLOCK_DURATION 3000 // in miliseconds
+
 //--------------------
+
+
 
 #include "pins.h"
 #include "display_TM1637.h"
@@ -76,9 +83,8 @@ extern Key kbMenu;
 extern Key kbUp;
 extern Key kbDown;
 extern Pin debugDiode;
-//extern StateMachine mainStateMachine;
+//extern StateMachine mainProgramState;
 
-//void debugDiode_toggle();
-
+// void debugDiode_toggle();
 
 #endif // _GLOBALS_H_
