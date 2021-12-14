@@ -15,8 +15,6 @@
 #include "globals.h"
 //#include "pins.h"
 
-StateMachine mainProgramState;
-
 void timer_init(void)
 {
   OCR2A = 2 * MAIN_CLOCK_TICK - 1;                    // reset Timer2 at 2 * MAIN_CLOCK_TICK
@@ -131,7 +129,6 @@ int main()
   port_init();
   uart_init();
   sei();
-
   interval1 = eeprom_read_dword(saved_interval1);
   interval2 = eeprom_read_dword(saved_interval2);
   interval3 = eeprom_read_dword(saved_interval3);
@@ -161,7 +158,7 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   Timer halfSecondTick(&mainClock_us_temp, 500000 / MAIN_CLOCK_TICK);
   halfSecondTick.registerCallback(halfSecondRoutine);
 
-  Timer refreshDisplayKeyboard(&mainClock_us_temp, KB_REFRESH_PERIOD * (1000/ MAIN_CLOCK_TICK));
+  Timer refreshDisplayKeyboard(&mainClock_us_temp, KB_REFRESH_PERIOD * (1000 / MAIN_CLOCK_TICK));
   refreshDisplayKeyboard.registerCallback(refreshDisplayKeyboardRoutine);
 
   // MINUTES AND HOURS
@@ -190,7 +187,7 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   kbMenu.registerCallback(
       []()
       {
-        beeper.setBeep(mainClock_us_temp + 10000, 500000,4);
+        beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
       },
       3);
 

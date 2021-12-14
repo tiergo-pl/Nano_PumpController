@@ -23,36 +23,5 @@ private:
   void (*callback)();
 };
 
-class StateMachine
-{
-public:
-  StateMachine();
-  bool execute();
-  void start();
-  void hold();
-  void resume();
-  void toggle();
-  void nextState();
-  void previousState();
-  bool isRunning();
-  void transit();
-  void update();
-
-private:
-  enum State
-  {
-    stateHold = 0,
-    stateAeration,
-    stateAfterAeration,
-    statePumping,
-    stateAfterPumping,
-    endOfEnum
-  };
-  State currentState = stateHold;
-  State holdedState = stateAeration;
-  bool transition = false;
-  bool toUpdate = false;
-  int8_t timer[(int)endOfEnum][2];
-};
 
 #endif // _TIMER_H_

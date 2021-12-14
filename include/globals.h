@@ -59,18 +59,67 @@ extern bool consoleDebugOn; // debugging via serial port (console)
 #define BEEPER PORTD, PD4
 // #define Buzzer PC3
 
-#define KB_REFRESH_PERIOD 40 //in miliseconds
-#define KB_LONG_PRESS_DURATION 500 //in miliseconds
+#define KB_REFRESH_PERIOD 40            // in miliseconds
+#define KB_LONG_PRESS_DURATION 500      // in miliseconds
 #define KB_VERYLONG_PRESS_DURATION 3000 // in miliseconds
-#define KB_BLOCK_DURATION 3000 // in miliseconds
+#define KB_BLOCK_DURATION 3000          // in miliseconds
 
 //--------------------
-
-
 
 #include "pins.h"
 #include "display_TM1637.h"
 #include "timer.h"
+
+// classes
+
+class ProgramState
+{
+public:
+  enum State
+  {
+    stateHold = 0,
+    stateAeration,
+    stateAfterAeration,
+    statePumping,
+    stateAfterPumping,
+  };
+  int8_t timer[(int)stateAfterPumping + 1][2];
+
+  ProgramState();
+  bool execute();
+  void start();
+  void hold();
+  void resume();
+  void toggle();
+  void nextState();
+  void previousState();
+  bool isRunning();
+  void transit();
+  void update();
+
+private:
+  State currentState = stateHold;
+  State holdedState = stateAeration;
+  bool transition = false;
+  bool toUpdate = false;
+};
+class Menu
+{
+public:
+  enum MenuEntry
+  {
+    rootLevel = 0,
+    changeTimer1,
+    changeTimer2,
+    changeTimer3,
+    changeTimer4,
+    changeHours,
+    changeMinutes
+  };
+
+private:
+};
+//--------
 
 extern DisplayTM1637 display;
 extern uint8_t dispContent[];
@@ -83,7 +132,7 @@ extern Key kbMenu;
 extern Key kbUp;
 extern Key kbDown;
 extern Pin debugDiode;
-//extern StateMachine mainProgramState;
+extern ProgramState mainProgramState;
 
 // void debugDiode_toggle();
 
