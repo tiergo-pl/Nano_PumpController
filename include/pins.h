@@ -61,18 +61,18 @@ public:
   using Pin::Pin;
   /**
    * @brief Feed Key:: object with functions.
-   * @param keyFunction 0-short press, 1-long press, 2-long pressing, 3 very long press
+   * @param *[...]Func short press, long press, long pressing, very long press
    */
-  void registerCallback(void (*func)(), uint8_t keyFunction = 0);
+  void registerCallback(void (*shortPressFunc)(), void (*longPressFunc)(), void (*longPressingFunc)(), void (*veryLongPressFunc)());
   bool execute();
 
 private:
   uint8_t keyState = 0;
   uint8_t pressTime = 0;
-  void (*shortPressCallback)();
-  void (*longPressCallback)();
-  void (*longPressingCallback)();
-  void (*veryLongPressCallback)();
+  void (*pShortPressCallback)();
+  void (*pLongPressCallback)();
+  void (*pLongPressingCallback)();
+  void (*pVeryLongPressCallback)();
   bool pressed();
 };
 

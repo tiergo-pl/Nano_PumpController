@@ -1,4 +1,5 @@
 #include "globals.h"
+#include "parse.h"
 
 volatile uint32_t mainClock_us = 0; // Software counter incremented by timer interrupt
 uint32_t mainClock_us_temp = 0;
@@ -50,17 +51,24 @@ Pin debugDiode(&PORTD, 7);
 }*/
 
 ProgramState mainProgramState;
+Menu mainMenu;
+//--------------------------------------------------------------------------
+void log(const char *text)
+{
+  uartTransmitString(text);
+}
+//--------------------------------------------------------------------------
 
 ProgramState::ProgramState()
 {
   timer[stateAeration][0] = 4;      // Hours
-  timer[stateAeration][1] = 4;      // Minutes
-  timer[stateAfterAeration][0] = 2; // Hours
-  timer[stateAfterAeration][1] = 5; // Minutes
-  timer[statePumping][0] = 8;       // Hours
-  timer[statePumping][1] = 6;       // Minutes
-  timer[stateAfterPumping][0] = 12; // Hours
-  timer[stateAfterPumping][1] = 7;  // Minutes
+  timer[stateAeration][1] = 5;      // Minutes
+  timer[stateAfterAeration][0] = 5; // Hours
+  timer[stateAfterAeration][1] = 6; // Minutes
+  timer[statePumping][0] = 6;       // Hours
+  timer[statePumping][1] = 7;       // Minutes
+  timer[stateAfterPumping][0] = 7;  // Hours
+  timer[stateAfterPumping][1] = 8;  // Minutes
 }
 
 bool ProgramState::execute()
@@ -202,6 +210,278 @@ void ProgramState::transit()
 }
 
 void ProgramState::update()
+{
+  toUpdate = true;
+}
+
+//--------------------------------------------------------------------------
+Menu::Menu()
+{
+  menuLevel = rootLevel;
+  toUpdate = true;
+}
+
+/**
+ * @brief Increade timer
+ *
+ * @param pTimer pointer to timer to change
+ * @param max max timer value (e.g. 60 - minutes, 24 - hours)
+ */
+
+void timerIncrease(int8_t *pTimer, int8_t max)
+{
+  (*pTimer)++;
+  if (*pTimer >= max)
+    *pTimer = 0;
+}
+
+bool Menu::execute()
+{
+  if (toUpdate)
+  {
+    toUpdate = false;
+
+    switch (menuLevel)
+    {
+
+    case rootLevel:
+      kbMenu.registerCallback(
+          []()
+          {
+            mainProgramState.toggle();
+            beeper.beepTwice();
+          },
+          []()
+          {
+            mainMenu.menuLevel = changeTimerAeration;
+            mainMenu.update();
+            beeper.setBeep(mainClock_us_temp + 10000, 500000);
+          },
+          []()
+          {
+            debugDiode.toggle();
+          },
+          []()
+          {
+            beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
+          });
+
+      kbUp.registerCallback(
+          []()
+          {
+            mainProgramState.previousState();
+            debugDiode.high_PullUp();
+            beeper.beepOnce();
+          },
+          nullptr, nullptr, nullptr);
+      kbDown.registerCallback(
+          []()
+          {
+            mainProgramState.nextState();
+            debugDiode.low_HiZ();
+            beeper.beepOnce();
+          },
+          nullptr, nullptr, nullptr);
+      log("root level\n");
+      break;
+
+    case changeTimerAeration:
+      kbMenu.registerCallback(
+          []()
+          {
+            mainMenu.menuLevel = changeTimerAfterAeration;
+            mainMenu.update();
+            beeper.beepTwice();
+          },
+          []()
+          {
+            mainMenu.menuLevel = rootLevel;
+            mainMenu.update();
+            beeper.setBeep(mainClock_us_temp + 10000, 500000);
+          },
+          []()
+          {
+            debugDiode.toggle();
+          },
+          []()
+          {
+            beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
+          });
+      kbUp.registerCallback(
+          []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAeration][0], 96);
+            beeper.beepOnce();
+          },
+          nullptr, []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAeration][0], 96);
+            beeper.beepOnce(); },
+          nullptr);
+      kbDown.registerCallback(
+          []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAeration][1], 60);
+            beeper.beepOnce();
+          },
+          nullptr, []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAeration][1], 60);
+            beeper.beepOnce(); },
+          nullptr);
+      log("changeTimerAeration\n");
+      break;
+    case changeTimerAfterAeration:
+      kbMenu.registerCallback(
+          []()
+          {
+            mainMenu.menuLevel = changeTimerPumping;
+            mainMenu.update();
+            beeper.beepTwice();
+          },
+          []()
+          {
+            mainMenu.menuLevel = rootLevel;
+            mainMenu.update();
+            beeper.setBeep(mainClock_us_temp + 10000, 500000);
+          },
+          []()
+          {
+            debugDiode.toggle();
+          },
+          []()
+          {
+            beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
+          });
+      kbUp.registerCallback(
+          []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAfterAeration][0], 96);
+            beeper.beepOnce();
+          },
+          nullptr, []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAfterAeration][0], 96);
+            beeper.beepOnce(); },
+          nullptr);
+      kbDown.registerCallback(
+          []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAfterAeration][1], 60);
+            beeper.beepOnce();
+          },
+          nullptr, []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAfterAeration][1], 60);
+            beeper.beepOnce(); },
+          nullptr);
+      log("changeTimerAfterAeration\n");
+      break;
+    case changeTimerPumping:
+      kbMenu.registerCallback(
+          []()
+          {
+            mainMenu.menuLevel = changeTimerAfterPumping;
+            mainMenu.update();
+            beeper.beepTwice();
+          },
+          []()
+          {
+            mainMenu.menuLevel = rootLevel;
+            mainMenu.update();
+            beeper.setBeep(mainClock_us_temp + 10000, 500000);
+          },
+          []()
+          {
+            debugDiode.toggle();
+          },
+          []()
+          {
+            beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
+          });
+      kbUp.registerCallback(
+          []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::statePumping][0], 96);
+            beeper.beepOnce();
+          },
+          nullptr, []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::statePumping][0], 96);
+            beeper.beepOnce(); },
+          nullptr);
+      kbDown.registerCallback(
+          []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::statePumping][1], 60);
+            beeper.beepOnce();
+          },
+          nullptr, []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::statePumping][1], 60);
+            beeper.beepOnce(); },
+          nullptr);
+      log("changeTimerPumping\n");
+      break;
+    case changeTimerAfterPumping:
+      kbMenu.registerCallback(
+          []()
+          {
+            mainMenu.menuLevel = changeTimerAeration;
+            mainMenu.update();
+            beeper.beepTwice();
+          },
+          []()
+          {
+            mainMenu.menuLevel = rootLevel;
+            mainMenu.update();
+            beeper.setBeep(mainClock_us_temp + 10000, 500000);
+          },
+          []()
+          {
+            debugDiode.toggle();
+          },
+          []()
+          {
+            beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
+          });
+      kbUp.registerCallback(
+          []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAfterPumping][0], 96);
+            beeper.beepOnce();
+          },
+          nullptr, []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAfterPumping][0], 96);
+            beeper.beepOnce(); },
+          nullptr);
+      kbDown.registerCallback(
+          []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAfterPumping][1], 60);
+            beeper.beepOnce();
+          },
+          nullptr, []()
+          {
+            timerIncrease(&mainProgramState.timer[ProgramState::stateAfterPumping][1], 60);
+            beeper.beepOnce(); },
+          nullptr);
+      log("changeTimerAfterPumping\n");
+      break;
+    default:
+      break;
+    }
+    return true;
+  }
+  else
+    return false;
+}
+Menu::MenuEntry Menu::getMenuLevel()
+{
+  return menuLevel;
+}
+void Menu::update()
 {
   toUpdate = true;
 }

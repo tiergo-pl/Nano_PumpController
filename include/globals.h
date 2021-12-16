@@ -62,7 +62,7 @@ extern bool consoleDebugOn; // debugging via serial port (console)
 #define KB_REFRESH_PERIOD 40            // in miliseconds
 #define KB_LONG_PRESS_DURATION 500      // in miliseconds
 #define KB_VERYLONG_PRESS_DURATION 3000 // in miliseconds
-#define KB_BLOCK_DURATION 3000          // in miliseconds
+#define KB_BLOCK_DURATION 500          // in miliseconds
 
 //--------------------
 
@@ -96,6 +96,11 @@ public:
   bool isRunning();
   void transit();
   void update();
+  void someFunc()
+  {
+    int a;
+    a++;
+  }
 
 private:
   State currentState = stateHold;
@@ -103,21 +108,28 @@ private:
   bool transition = false;
   bool toUpdate = false;
 };
+
 class Menu
 {
 public:
   enum MenuEntry
   {
     rootLevel = 0,
-    changeTimer1,
-    changeTimer2,
-    changeTimer3,
-    changeTimer4,
-    changeHours,
-    changeMinutes
+    changeTimerAeration,
+    changeTimerAfterAeration,
+    changeTimerPumping,
+    changeTimerAfterPumping,
   };
 
+public:
+  Menu();
+  bool execute();
+  MenuEntry getMenuLevel();
+  void update();
+
 private:
+  MenuEntry menuLevel;
+  bool toUpdate;
 };
 //--------
 
@@ -133,6 +145,7 @@ extern Key kbUp;
 extern Key kbDown;
 extern Pin debugDiode;
 extern ProgramState mainProgramState;
+extern Menu mainMenu;
 
 // void debugDiode_toggle();
 

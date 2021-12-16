@@ -143,26 +143,12 @@ bool Beeper::isOn()
   return readOutput();
 }
 
-void Key::registerCallback(void (*func)(), uint8_t keyFunction)
+void Key::registerCallback(void (*shortPressFunc)(), void (*longPressFunc)(), void (*longPressingFunc)(), void (*veryLongPressFunc)())
 {
-  switch (keyFunction)
-  {
-  case 1:
-    longPressCallback = func;
-    break;
-
-  case 2:
-    longPressingCallback = func;
-    break;
-
-  case 3:
-    veryLongPressCallback = func;
-    break;
-
-  default:
-    shortPressCallback = func;
-    break;
-  }
+  pShortPressCallback = shortPressFunc;
+  pLongPressCallback = longPressFunc;
+  pLongPressingCallback = longPressingFunc;
+  pVeryLongPressCallback = veryLongPressFunc;
 }
 
 bool Key::execute()
@@ -187,9 +173,14 @@ bool Key::execute()
     if (pressTime > KB_VERYLONG_PRESS_DURATION / KB_REFRESH_PERIOD) // number of keyboard readouts when very long pressed
       keyState = 4;
   }
+  if (pressed() && (keyState == 4))
+  {
+    pressTime = -1; //infinitely keep in keyState = 4 until pressed
+  }
+
   if ((keyState == 5)) // temporary keyboard blocking
   {
-    if (pressTime < KB_BLOCK_DURATION/KB_REFRESH_PERIOD) // blocking time in keyboard readouts
+    if (pressTime < KB_BLOCK_DURATION / KB_REFRESH_PERIOD) // blocking time in keyboard readouts
       pressTime++;
     else
     {
@@ -202,9 +193,9 @@ bool Key::execute()
   {
     keyState = 0;
 
-    if (shortPressCallback != nullptr)
+    if (pShortPressCallback != nullptr)
     {
-      shortPressCallback();
+      pShortPressCallback();
     }
     pressTime = 0;
     return true;
@@ -214,28 +205,28 @@ bool Key::execute()
   {
     keyState = 0;
 
-    if (longPressCallback != nullptr)
+    if (pLongPressCallback != nullptr)
     {
-      longPressCallback();
+      pLongPressCallback();
     }
     pressTime = 0;
     return true;
   }
 
-  if (pressed() && (keyState == 3)) // long pressing
+  if (pressed() && ((keyState == 3)||(keyState == 4))) // long pressing
   {
-    if (longPressingCallback != nullptr)
+    if (pLongPressingCallback != nullptr)
     {
-      longPressingCallback();
+      pLongPressingCallback();
     }
   }
 
-  if (pressed() && (keyState == 4)) // very long press
+  if (!pressed() && (keyState == 4)) // very long press
   {
     keyState = 5;
-    if (veryLongPressCallback != nullptr)
+    if (pVeryLongPressCallback != nullptr)
     {
-      veryLongPressCallback();
+      pVeryLongPressCallback();
     }
     pressTime = 0;
     return true;

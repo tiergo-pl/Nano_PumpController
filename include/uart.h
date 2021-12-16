@@ -17,7 +17,7 @@
 
 void uart_init(void);
 void uartTransmitBinary(char *buffer, uint8_t lenght);
-void uartTransmitString(char *buffer);
+void uartTransmitString(const char *buffer);
 uint8_t uartReceiveString(char *rxString);
 uint8_t uartEcho();
 

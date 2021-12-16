@@ -40,7 +40,7 @@ void uartTransmitBinary(char *buffer, uint8_t lenght)
   UCSR0B |= (_BV(UDRIE0)); // enable interrupt from transmit buffer
 }
 
-void uartTransmitString(char *buffer)
+void uartTransmitString(const char *buffer)
 {
   uint8_t i = 0;
   while (buffer[i] != 0)

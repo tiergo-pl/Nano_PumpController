@@ -84,30 +84,34 @@ void halfSecondRoutine()
 
 void refreshDisplayKeyboardRoutine()
 {
-  /*if (!kbUp.readInput())
-  {
-    mainProgramState.previousState();
-    debugDiode.high_PullUp();
-    beeper.beepOnce();
-  }
-  if (!kbDown.readInput())
-  {
-    mainProgramState.nextState();
-    debugDiode.low_HiZ();
-    beeper.beepOnce();
-  }
-  if (!kbMenu.readInput())
-  {
-    mainProgramState.toggle();
-    debugDiode.toggle();
-    beeper.beepTwice();
-  }*/
   kbMenu.execute();
   kbUp.execute();
   kbDown.execute();
-  // debugDiode.toggle();
-  display.prepareSegments(display.toBcd(minutesLeft, dispContent, 2), 2, 2); // move this 2 lines to Menu service
-  display.prepareSegments(display.toBcd(hoursLeft, dispContent, 2), 2, 0);   // move this 2 lines to Menu service
+  if (mainMenu.getMenuLevel() == Menu::rootLevel)
+  {
+    display.prepareSegments(display.toBcd(minutesLeft, dispContent, 2), 2, 2); // displays current minute counter
+    display.prepareSegments(display.toBcd(hoursLeft, dispContent, 2), 2, 0);   // displays current hour counter
+  }
+  if (mainMenu.getMenuLevel() == Menu::MenuEntry::changeTimerAeration)
+  {
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAeration][1], dispContent, 2), 2, 2); // displays set minute counter
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAeration][0], dispContent, 2), 2, 0); // displays set hour counter
+  }
+  if (mainMenu.getMenuLevel() == Menu::MenuEntry::changeTimerAfterAeration)
+  {
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAfterAeration][1], dispContent, 2), 2, 2); // displays set minute counter
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAfterAeration][0], dispContent, 2), 2, 0); // displays set hour counter
+  }
+  if (mainMenu.getMenuLevel() == Menu::MenuEntry::changeTimerPumping)
+  {
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::statePumping][1], dispContent, 2), 2, 2);  // displays set minute counter
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::statePumping][0], dispContent, 2), 2, 0);  // displays set hour counter
+  }
+  if (mainMenu.getMenuLevel() == Menu::MenuEntry::changeTimerAfterPumping)
+  {
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAfterPumping][1], dispContent, 2), 2, 2); // displays set minute counter
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAfterPumping][0], dispContent, 2), 2, 0); // displays set hour counter
+  }
 }
 void minuteTickDownwardsRoutine()
 {
@@ -165,49 +169,6 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   Timer minuteTickDownwards(&mainClock_us_temp, 20000); // CHANGE TO (&mainClock_seconds, 60) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   minuteTickDownwards.registerCallback(minuteTickDownwardsRoutine);
 
-  kbMenu.registerCallback(
-      []()
-      {
-        mainProgramState.toggle();
-        beeper.beepTwice();
-      },
-      0);
-  kbMenu.registerCallback(
-      []()
-      {
-        beeper.setBeep(mainClock_us_temp + 10000, 500000);
-      },
-      1);
-  kbMenu.registerCallback(
-      []()
-      {
-        debugDiode.toggle();
-      },
-      2);
-  kbMenu.registerCallback(
-      []()
-      {
-        beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
-      },
-      3);
-
-  kbUp.registerCallback(
-      []()
-      {
-        mainProgramState.previousState();
-        debugDiode.high_PullUp();
-        beeper.beepOnce();
-      },
-      0);
-  kbDown.registerCallback(
-      []()
-      {
-        mainProgramState.nextState();
-        debugDiode.low_HiZ();
-        beeper.beepOnce();
-      },
-      0);
-
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
@@ -230,12 +191,15 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
         mainProgramState.start();
     }
     else
+    {
       refreshDisplayKeyboard.execute();
+      mainProgramState.execute();
+      mainMenu.execute();
+    }
 
     oneSecondTick.execute(); // increment every second
 
     minuteTickDownwards.execute(mainProgramState.isRunning());
-    mainProgramState.execute();
     display.execute();
     halfSecondTick.execute();
     if ((mainClock_us_temp - clk1) >= interval1)
