@@ -36,10 +36,12 @@ void parseCmdline(char *cmdLine)
 
     if (!strcmp(cmd, CMD_SAVE))
     {
+      /*
       eeprom_update_dword(saved_interval1, interval1);
       eeprom_update_dword(saved_interval2, interval2);
       eeprom_update_dword(saved_interval3, interval3);
       eeprom_update_dword(saved_intervalBuzzer, intervalBuzzer);
+      */
       uartTransmitString((char *)"...Saved\r\n");
     }
     else if (!strcmp(cmd, CMD_SHOW))
@@ -49,8 +51,8 @@ void parseCmdline(char *cmdLine)
               mainClock_us_temp, cmd, interval1 * MAIN_CLOCK_TICK, interval2 * MAIN_CLOCK_TICK, interval3 * MAIN_CLOCK_TICK, intervalBuzzer);
       uartTransmitString(uartOutputString);
       */
-      sprintf(uartOutputString, "mainClk= %lu, uptime: %lu s, interval1= %lu, interval2= %lu, interval3= %lu, intervalBuzzer= %lu beeper= %u\r\n",
-              mainClock_us_temp, mainClock_seconds, interval1 * MAIN_CLOCK_TICK, interval2 * MAIN_CLOCK_TICK, interval3 * MAIN_CLOCK_TICK, intervalBuzzer, beeper.isOn());
+      sprintf(uartOutputString, "mainClk= %lu, uptime: %lu s\r\n",
+              mainClock_us_temp, mainClock_seconds);
       uartTransmitString(uartOutputString);
     }
     else if (!strcmp(cmd, CMD_HELP))
@@ -61,21 +63,23 @@ void parseCmdline(char *cmdLine)
       uartTransmitString((char *)CMD_SAVE ENDL
                              CMD_SHOW ENDL
                                  CMD_HELP ENDL
-                                     CMD_interval1 ENDL
+                                     /*CMD_interval1 ENDL
                                          CMD_interval2 ENDL
                                              CMD_interval3 ENDL
                                                  CMD_freqBuzzer ENDL
                                                      CMD_pwm0 ENDL
                                                          CMD_pwm1 ENDL
-                                                             CMD_random ENDL
+                                                             */CMD_random ENDL/*
                                                                  CMD_contrast ENDL
-                                                                     CMD_displayfill ENDL
+                                                                     CMD_displayfill ENDL*/
                                                                          CMD_beepOn ENDL
                                                                              CMD_beepOff ENDL
                                                                                  CMD_DEBUG ENDL);
     }
+    /*
     else if (!strcmp(cmd, CMD_interval1))
     {
+      
       if (value)
       {
         interval1 = value / MAIN_CLOCK_TICK;
@@ -110,12 +114,14 @@ void parseCmdline(char *cmdLine)
       else
         uartTransmitString((char *)"Input valid frequency in Hertz. Nothing changed yet...\r\n");
     }
+    
     else if (!strcmp(cmd, CMD_pwm0))
     {
     }
     else if (!strcmp(cmd, CMD_pwm1))
     {
     }
+    */
     else if (!strcmp(cmd, CMD_random))
     {
       int val_rand = rand();
@@ -126,6 +132,7 @@ void parseCmdline(char *cmdLine)
       sprintf(uartOutputString, "Randomly drawn number is: %i \r\n", val_rand);
       uartTransmitString(uartOutputString);
     }
+    /*
     else if (!strcmp(cmd, CMD_contrast))
     {
 
@@ -135,6 +142,7 @@ void parseCmdline(char *cmdLine)
     else if (!strcmp(cmd, CMD_displayfill))
     {
     }
+    */
     else if (!strcmp(cmd, CMD_beepOn))
     {
       beeper.setOn();

@@ -5,10 +5,9 @@
 #include <string.h>
 #include <util/atomic.h>
 #include <util/delay.h>
-#include <avr/eeprom.h>
+//#include <avr/eeprom.h>
 
 //#include "uart.h"
-//#include "debug.h"
 #include "parse.h"
 //#include "display_TM1637.h"
 //#include "timer.h"
@@ -104,8 +103,8 @@ void refreshDisplayKeyboardRoutine()
   }
   if (mainMenu.getMenuLevel() == Menu::MenuEntry::changeTimerPumping)
   {
-    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::statePumping][1], dispContent, 2), 2, 2);  // displays set minute counter
-    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::statePumping][0], dispContent, 2), 2, 0);  // displays set hour counter
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::statePumping][1], dispContent, 2), 2, 2); // displays set minute counter
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::statePumping][0], dispContent, 2), 2, 0); // displays set hour counter
   }
   if (mainMenu.getMenuLevel() == Menu::MenuEntry::changeTimerAfterPumping)
   {
@@ -124,7 +123,29 @@ void minuteTickDownwardsRoutine()
       mainProgramState.transit();
   }
 }
-
+void debugRoutine()
+{
+  sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
+          mainClock_seconds, pump.getPort(), *pump.getPort(), pump.getDdr(), *pump.getDdr(), pump.getPin(), *pump.getPin());
+  uartTransmitString(debugString);
+  sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
+          mainClock_seconds, kbMenu.getPort(), *kbMenu.getPort(), kbMenu.getDdr(), *kbMenu.getDdr(), kbMenu.getPin(), *kbMenu.getPin());
+  uartTransmitString(debugString);
+}
+void consoleInput()
+{
+  if (uartEcho())
+  {
+    if (sizeof(uartInputString) < (strlen(uartInputString) + 2))
+      uartInputString[0] = 0;
+    uartReceiveString(uartInputString);
+    if (detectEndlCmdline(cmdLine, uartInputString))
+    {
+      parseCmdline(cmdLine);
+      uartTransmitString("\r\n");
+    }
+  }
+}
 // main starts here
 // main starts here
 int main()
@@ -133,17 +154,16 @@ int main()
   port_init();
   uart_init();
   sei();
+  /*
   interval1 = eeprom_read_dword(saved_interval1);
   interval2 = eeprom_read_dword(saved_interval2);
   interval3 = eeprom_read_dword(saved_interval3);
   intervalBuzzer = eeprom_read_dword(saved_intervalBuzzer);
+  */
   /* not used - to delete in future
 eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   eeprom_read_block(sequence2, saved_sequence2, SEQUENCE2_SIZE);
   */
-  char uartInputString[64] = "\0";
-  char cmdLine[64] = "\0";
-  char debugString[120];
 
   beeper.setBeep(0, 500000); // initial beep on system start
 
@@ -169,6 +189,8 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   Timer minuteTickDownwards(&mainClock_us_temp, 20000); // CHANGE TO (&mainClock_seconds, 60) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   minuteTickDownwards.registerCallback(minuteTickDownwardsRoutine);
 
+  Timer debugTimer(&mainClock_us_temp, 200000);
+  debugTimer.registerCallback(debugRoutine);
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
@@ -202,54 +224,10 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
     minuteTickDownwards.execute(mainProgramState.isRunning());
     display.execute();
     halfSecondTick.execute();
-    if ((mainClock_us_temp - clk1) >= interval1)
-    {
-      clk1 = mainClock_us_temp;
-      // PORTB ^= 1 << LED_BUILTIN;
-      //  PORTC ^= _BV(debugPin2);
-      /*
-      if (ledBuiltin.readOutput())
-        display.prepareDots(0, 1, 1);
-      else
-        display.prepareDots(0x01, 1, 1);
-      ledBuiltin.toggle();
-      // PINB |= _BV(PB5);
-      */
-    }
-    if ((mainClock_us_temp - clk2) >= interval2)
-    {
-      clk2 = mainClock_us_temp;
-    }
 
-    if ((mainClock_us_temp - clk3) >= interval3)
-    {
-      clk3 = mainClock_us_temp;
-      if (consoleDebugOn)
-      {
-        sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
-                mainClock_seconds, pump.getPort(), *pump.getPort(), pump.getDdr(), *pump.getDdr(), pump.getPin(), *pump.getPin());
-        uartTransmitString(debugString);
-        sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
-                mainClock_seconds, kbMenu.getPort(), *kbMenu.getPort(), kbMenu.getDdr(), *kbMenu.getDdr(), kbMenu.getPin(), *kbMenu.getPin());
-        uartTransmitString(debugString);
-      }
-    }
-    if ((mainClock_us_temp - clkBuzzer) >= intervalBuzzer)
-    {
-      clkBuzzer = mainClock_us_temp;
-      // PORTC ^= _BV(Buzzer);
-    }
+    if (consoleDebugOn)
+      debugTimer.execute();
 
-    if (uartEcho())
-    {
-      if (sizeof(uartInputString) < (strlen(uartInputString) + 2))
-        uartInputString[0] = 0;
-      uartReceiveString(uartInputString);
-      if (detectEndlCmdline(cmdLine, uartInputString))
-      {
-        parseCmdline(cmdLine);
-        uartTransmitString((char *)"\r\n");
-      }
-    }
+    consoleInput();
   }
 }

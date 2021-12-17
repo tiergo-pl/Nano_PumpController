@@ -9,7 +9,7 @@
 
 #include "globals.h"
 #include "circ_buffer.h"
-#include "debug.h"
+//#include "debug.h"
 
 #define BAUD 250000
 #include <util/setbaud.h>
