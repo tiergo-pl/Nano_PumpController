@@ -5,32 +5,30 @@ volatile uint32_t mainClock_us = 0; // Software counter incremented by timer int
 uint32_t mainClock_us_temp = 0;
 uint32_t mainClock_seconds = 0; // Software counter incremented every 1 second
 uint32_t tickAtLastSec = 0;     // Used in 1 second timer calculations
-int8_t minutesLeft = 59;
-int8_t hoursLeft = 23;
+int8_t minutesLeft = eeprom_read_byte(&savedMinutesLeft);
+int8_t hoursLeft = eeprom_read_byte(&savedHoursLeft);
 
 /*volatile uint32_t clk1 = 0;
 volatile uint32_t clk2 = 0;
 volatile uint32_t clk3 = 0;
-volatile uint32_t interval1;                    
-uint32_t *saved_interval1 = (uint32_t *)0;      
-volatile uint32_t interval2;                    
-uint32_t *saved_interval2 = (uint32_t *)4;      
-volatile uint32_t interval3;                    
-uint32_t *saved_interval3 ; 
-*/
+volatile uint32_t interval1;
+uint32_t *saved_interval1 = (uint32_t *)0;
+volatile uint32_t interval2;
+uint32_t *saved_interval2 = (uint32_t *)4;
+volatile uint32_t interval3;
+uint32_t *saved_interval3 ;
 
 volatile uint32_t clkBuzzer;
 volatile uint32_t intervalBuzzer;
 uint32_t *saved_intervalBuzzer = (uint32_t *)12;
-
-
+*/
 bool consoleDebugOn = false;
 char debugString[];
 
 char uartInputString[] = "\0";
 char cmdLine[] = "\0";
 
-DisplayTM1637 display(&PORTD, 5, &PORTD, 6);
+DisplayTM1637 display(&DISP_CLK, &DISP_DIO);
 uint8_t dispContent[] = {0xff, 0xff, 0xff, 0xff};
 Beeper beeper(&BEEPER);
 Pin ledBuiltin(&LED_BUILTIN);
@@ -60,14 +58,9 @@ void log(const char *text)
 
 ProgramState::ProgramState()
 {
-  timer[stateAeration][0] = 4;      // Hours
-  timer[stateAeration][1] = 5;      // Minutes
-  timer[stateAfterAeration][0] = 5; // Hours
-  timer[stateAfterAeration][1] = 6; // Minutes
-  timer[statePumping][0] = 6;       // Hours
-  timer[statePumping][1] = 7;       // Minutes
-  timer[stateAfterPumping][0] = 7;  // Hours
-  timer[stateAfterPumping][1] = 8;  // Minutes
+  eeprom_read_block((void *)timer, (const void *)savedTimer, sizeof savedTimer);
+  currentState = stateHold;
+  holdedState = stateAeration;
 }
 
 bool ProgramState::execute()
@@ -124,7 +117,11 @@ void ProgramState::start()
   currentState = stateAeration;
   update();
 }
-
+void ProgramState::recoverFromPowerLoss()
+{
+  currentState = (State)eeprom_read_byte(&savedCurrentState);
+  holdedState = (State)eeprom_read_byte(&savedHoldedState);
+}
 void ProgramState::hold()
 {
   if (currentState != stateHold)
@@ -136,8 +133,13 @@ void ProgramState::hold()
 
 void ProgramState::resume()
 {
+
   if (currentState == stateHold)
+  {
+    if (holdedState == stateHold)
+      holdedState = stateAeration;                  //reset state in case of permanent state lock
     currentState = holdedState;
+  }
 }
 
 void ProgramState::toggle()
@@ -262,6 +264,9 @@ bool Menu::execute()
           },
           []()
           {
+            eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState); // move to power loss routine
+            eeprom_update_byte(&savedHoursLeft, (uint8_t)hoursLeft);                        // move to power loss routine
+            eeprom_update_byte(&savedMinutesLeft, (uint8_t)minutesLeft);                    // move to power loss routine
             beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
           });
 
@@ -272,7 +277,11 @@ bool Menu::execute()
             debugDiode.high_PullUp();
             beeper.beepOnce();
           },
-          nullptr, nullptr, nullptr);
+          nullptr, nullptr,
+          []()
+          { 
+            eeprom_read_block((void *)mainProgramState.timer, (const void *)savedTimer, sizeof savedTimer);
+            beeper.setBeep(mainClock_us_temp + 10000, 500000, 2); });
       kbDown.registerCallback(
           []()
           {
@@ -280,7 +289,11 @@ bool Menu::execute()
             debugDiode.low_HiZ();
             beeper.beepOnce();
           },
-          nullptr, nullptr, nullptr);
+          nullptr, nullptr,
+          []()
+          { 
+            eeprom_update_block( (const void *)mainProgramState.timer,(void *)savedTimer, sizeof savedTimer);
+            beeper.setBeep(mainClock_us_temp + 10000, 500000, 3); });
       log("root level\n");
       break;
 
@@ -484,3 +497,11 @@ void Menu::update()
 {
   toUpdate = true;
 }
+
+// EEPROM variables =================================================================================
+
+int8_t EEMEM savedTimer[(int)ProgramState::stateAfterPumping + 1][2] = {{0, 0}, {1, 30}, {0, 40}, {0, 5}, {0, 1}}; // Defaults in eeprom
+uint8_t EEMEM savedCurrentState = (uint8_t)ProgramState::stateHold;
+uint8_t EEMEM savedHoldedState = (uint8_t)ProgramState::stateAeration; // Defaults in eeprom
+uint8_t EEMEM savedHoursLeft = 1;
+uint8_t EEMEM savedMinutesLeft = 11;

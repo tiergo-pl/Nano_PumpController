@@ -14,6 +14,7 @@
 #include "globals.h"
 //#include "pins.h"
 
+
 void timer_init(void)
 {
   OCR2A = 2 * MAIN_CLOCK_TICK - 1;                    // reset Timer2 at 2 * MAIN_CLOCK_TICK
@@ -210,7 +211,9 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
       pump.outputLow();
       display.prepareDots(0x0);
       if (mainClock_us_temp > 95000)
-        mainProgramState.start();
+      {
+        mainProgramState.recoverFromPowerLoss();
+      }
     }
     else
     {

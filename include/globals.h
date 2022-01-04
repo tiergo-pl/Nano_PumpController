@@ -2,12 +2,14 @@
 #define _GLOBALS_H_
 
 #include <stdint.h>
+#include <avr/eeprom.h>
+
 #include "debug.h"
 
 //-----------------------------
 // macros and vars used in software clock
 // remember [extern] statement
-#define MAIN_CLOCK_TICK 10          // 1 tick of mainClock_us duration in microseconds (max 128 due to hw limitations)
+#define MAIN_CLOCK_TICK 10             // 1 tick of mainClock_us duration in microseconds (max 128 due to hw limitations)
 extern volatile uint32_t mainClock_us; // Software timer incremented by hw timer interrupt - System tick
 extern uint32_t mainClock_us_temp;     // Copy of sw timer used in time calculations
 extern uint32_t mainClock_seconds;     // Software counter incremented every 1 second
@@ -54,6 +56,19 @@ extern char cmdLine[64];
 
 //-----------------------
 // used gpio pins
+#ifdef RELEASE_V1
+#define LED_BUILTIN PORTB, PB5
+#define AERATION PORTD, 4
+#define PUMP PORTD, 5
+#define KB_MENU PORTC, 3
+#define KB_UP PORTB, 4
+#define KB_DOWN PORTB, 3
+
+#define BEEPER PORTB, 2
+
+#define DISP_CLK PORTD, 2
+#define DISP_DIO PORTD, 3
+#else
 #define LED_BUILTIN PORTB, PB5
 #define AERATION PORTD, PD2
 #define PUMP PORTD, PD3
@@ -62,21 +77,23 @@ extern char cmdLine[64];
 #define KB_DOWN PORTB, 2
 
 #define BEEPER PORTD, PD4
-// #define Buzzer PC3
+
+#define DISP_CLK PORTD, 5
+#define DISP_DIO PORTD, 6
+#endif
 
 #define KB_REFRESH_PERIOD 40            // in miliseconds
 #define KB_LONG_PRESS_DURATION 500      // in miliseconds
 #define KB_VERYLONG_PRESS_DURATION 3000 // in miliseconds
-#define KB_BLOCK_DURATION 500          // in miliseconds
+#define KB_BLOCK_DURATION 500           // in miliseconds
 
 //--------------------
 
 #include "pins.h"
 #include "display_TM1637.h"
 #include "timer.h"
-#include <avr/eeprom.h>
 
-// classes
+// classes  ========================================================================================
 
 class ProgramState
 {
@@ -94,6 +111,7 @@ public:
   ProgramState();
   bool execute();
   void start();
+  void recoverFromPowerLoss();
   void hold();
   void resume();
   void toggle();
@@ -107,9 +125,9 @@ public:
     int a;
     a++;
   }
+  State currentState = stateHold;
 
 private:
-  State currentState = stateHold;
   State holdedState = stateAeration;
   bool transition = false;
   bool toUpdate = false;
@@ -138,10 +156,14 @@ private:
   bool toUpdate;
 };
 
+// EEPROM variables =================================================================================
+extern int8_t EEMEM savedTimer[(int)ProgramState::stateAfterPumping + 1][2];
+extern uint8_t EEMEM savedCurrentState;
+extern uint8_t EEMEM savedHoldedState;
+extern uint8_t EEMEM savedHoursLeft;
+extern uint8_t EEMEM savedMinutesLeft;
 
-
-//--------
-
+// Global objects and variables----------------------------------------------------------------------------
 extern DisplayTM1637 display;
 extern uint8_t dispContent[];
 
@@ -155,8 +177,5 @@ extern Key kbDown;
 extern Pin debugDiode;
 extern ProgramState mainProgramState;
 extern Menu mainMenu;
-
-
-
 
 #endif // _GLOBALS_H_

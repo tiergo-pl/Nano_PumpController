@@ -10,8 +10,11 @@
 #include "globals.h"
 #include "circ_buffer.h"
 //#include "debug.h"
-
+#ifdef RELEASE_V1
+#define BAUD 57600
+#else
 #define BAUD 250000
+#endif
 #include <util/setbaud.h>
 
 
