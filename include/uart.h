@@ -18,7 +18,7 @@
 #include <util/setbaud.h>
 
 
-void uart_init(void);
+void uartInit(void);
 void uartTransmitBinary(char *buffer, uint8_t lenght);
 void uartTransmitString(const char *buffer);
 uint8_t uartReceiveString(char *rxString);

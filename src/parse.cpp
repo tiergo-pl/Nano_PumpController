@@ -51,8 +51,8 @@ void parseCmdline(char *cmdLine)
               mainClock_us_temp, cmd, interval1 * MAIN_CLOCK_TICK, interval2 * MAIN_CLOCK_TICK, interval3 * MAIN_CLOCK_TICK, intervalBuzzer);
       uartTransmitString(uartOutputString);
       */
-      sprintf(uartOutputString, "mainClk= %lu, uptime: %lu s\r\n",
-              mainClock_us_temp, mainClock_seconds);
+      sprintf(uartOutputString, "sysClk= %u, uptime: %lu s\r\n",
+              sysClk, mainClock_seconds);
       uartTransmitString(uartOutputString);
     }
     else if (!strcmp(cmd, CMD_HELP))

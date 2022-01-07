@@ -7,19 +7,19 @@
 class Timer
 {
 public:
-  Timer(const uint32_t *clockSource, uint32_t duration);
+  Timer(const uint16_t *clockSource, uint16_t duration=SYS_FREQ);
   bool isActive();
-  void setDuration(const uint32_t &mDuration_);
+  void setDuration(const uint16_t &mDuration_);
   void registerCallback(void (*func)());
   bool execute(bool run = true);
 
 private:
-  const uint32_t *pClockSource;
-  uint32_t mDefaultDuration = 10000 / MAIN_CLOCK_TICK;
+  const uint16_t *pClockSource;
+  //uint32_t mDefaultDuration = 10000 / MAIN_CLOCK_TICK;
 
   bool mActive;
-  uint32_t mStartPoint = 0;
-  uint32_t mDuration;
+  uint16_t mStartPoint = 0;
+  uint16_t mDuration;
   void (*callback)();
 };
 

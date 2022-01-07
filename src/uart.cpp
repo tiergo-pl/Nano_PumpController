@@ -15,7 +15,7 @@ ISR(USART_UDRE_vect)
     UCSR0B &= ~(_BV(UDRIE0)); // disable interrupt from transmit buffer
 }
 
-void uart_init(void)
+void uartInit(void)
 {
 
   UBRR0H = UBRRH_VALUE;

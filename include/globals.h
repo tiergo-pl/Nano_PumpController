@@ -9,9 +9,13 @@
 //-----------------------------
 // macros and vars used in software clock
 // remember [extern] statement
-#define MAIN_CLOCK_TICK 10             // 1 tick of mainClock_us duration in microseconds (max 128 due to hw limitations)
-extern volatile uint32_t mainClock_us; // Software timer incremented by hw timer interrupt - System tick
-extern uint32_t mainClock_us_temp;     // Copy of sw timer used in time calculations
+//#define MAIN_CLOCK_TICK 10             // 1 tick of mainClock_us duration in microseconds (max 128 due to hw limitations)
+#define SYS_FREQ 10000 // in Hz, must be divisor of 250000 
+
+//extern volatile uint32_t mainClock_us; // Software timer incremented by hw timer interrupt - System tick
+//extern uint32_t mainClock_us_temp;     // Copy of sw timer used in time calculations
+extern volatile uint16_t sysClkMaster;
+extern uint16_t sysClk;
 extern uint32_t mainClock_seconds;     // Software counter incremented every 1 second
 extern uint32_t tickAtLastSec;         // Used in 1 second timer calculations
 extern int8_t minutesLeft;

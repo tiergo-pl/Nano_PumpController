@@ -1,12 +1,12 @@
 #include "timer.h"
 
-Timer::Timer(const uint32_t *clockSource, uint32_t duration)
+Timer::Timer(const uint16_t *clockSource, uint16_t duration)
 {
   pClockSource = clockSource;
   if (duration)
     mDuration = duration;
   else
-    mDuration = mDefaultDuration;
+    mDuration = SYS_FREQ;
 }
 
 bool Timer::isActive()
@@ -14,7 +14,7 @@ bool Timer::isActive()
   return mActive;
 }
 
-void Timer::setDuration(const uint32_t &mDuration_)
+void Timer::setDuration(const uint16_t &mDuration_)
 {
   mDuration = mDuration_;
 }

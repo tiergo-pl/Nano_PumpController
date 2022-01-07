@@ -14,16 +14,21 @@
 #include "globals.h"
 //#include "pins.h"
 
-
-void timer_init(void)
+void timerInit(void)
 {
-  OCR2A = 2 * MAIN_CLOCK_TICK - 1;                    // reset Timer2 at 2 * MAIN_CLOCK_TICK
-  TCCR2A = 0b00000010;                                //((1<<WGM21) | (0<<WGM20));        // Timer2 CTC mode
-  TCCR2B = ((0 << CS22) | (1 << CS21) | (0 << CS20)); // clk/8
-  TIMSK2 = (1 << OCIE2A);                             // Timer/Counter Interrupt Mask
+  // divide F_CPU by 1600 - gives 10 kHz system clock
+  TCCR2A = 0b00000010; //((1<<WGM21) | (0<<WGM20));        // Timer2 CTC mode
+#if F_CPU == 16000000L
+  TCCR2B = ((1 << CS22) | (0 << CS21) | (0 << CS20)); // prescaler clk/64 - 16 MHz clock
+#endif
+#if F_CPU == 8000000L
+  TCCR2B = ((0 << CS22) | (1 << CS21) | (1 << CS20)); // prescaler clk/32 - 8 MHz clock
+#endif
+  OCR2A = (250000 / SYS_FREQ - 1); // count to 250000/SYS_FREQ (divide prescaled freq by 250000/SYS_FREQ)
+  TIMSK2 = (1 << OCIE2A);          // Timer/Counter Interrupt Mask
 }
 
-void port_init(void)
+void portInit(void)
 {
   // DDRB = (1 << LED_BUILTIN) | _BV(debugPin3); // Led builtin (13)
   // DDRC = (1 << debugPin0) | (1 << debugPin1) | (1 << debugPin2) | _BV(Buzzer);
@@ -38,7 +43,7 @@ void port_init(void)
   debugDiode.outputHigh();
 }
 
-void adc_init()
+void adcInit()
 {
   ADMUX = 0x67; // Vref = Vcc,ADLAR=1 ,ADC7
   ADCSRA = 7;   // prescaler /128
@@ -53,7 +58,8 @@ ISR(ADC_vect)
 ISR(TIMER2_COMPA_vect) // TIMER2 interrupt
 {
   //  PORTC |= _BV(debugPin1);
-  mainClock_us++;
+  //mainClock_us++;
+  sysClkMaster++;
   //  PORTC &= ~_BV(debugPin1);
 }
 
@@ -151,9 +157,9 @@ void consoleInput()
 // main starts here
 int main()
 {
-  timer_init();
-  port_init();
-  uart_init();
+  timerInit();
+  portInit();
+  uartInit();
   sei();
   /*
   interval1 = eeprom_read_dword(saved_interval1);
@@ -166,7 +172,7 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   eeprom_read_block(sequence2, saved_sequence2, SEQUENCE2_SIZE);
   */
 
-  beeper.setBeep(0, 500000); // initial beep on system start
+  beeper.setBeep(0, 5000); // initial beep on system start
 
   // Initial display test
   display.prepareSegments(dispContent);
@@ -174,23 +180,23 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   display.execute();
 
   // Prepare one second timer
-  Timer oneSecondTick(&mainClock_us_temp, 1000000 / MAIN_CLOCK_TICK);
+  Timer oneSecondTick(&sysClk, 1 * SYS_FREQ);
   oneSecondTick.registerCallback(
       []()
       { mainClock_seconds++; }); // Lambda function wrapper - gives pointer to function
 
   // Prepare half second timer
-  Timer halfSecondTick(&mainClock_us_temp, 500000 / MAIN_CLOCK_TICK);
+  Timer halfSecondTick(&sysClk, 0.5*SYS_FREQ);
   halfSecondTick.registerCallback(halfSecondRoutine);
 
-  Timer refreshDisplayKeyboard(&mainClock_us_temp, KB_REFRESH_PERIOD * (1000 / MAIN_CLOCK_TICK));
+  Timer refreshDisplayKeyboard(&sysClk, KB_REFRESH_PERIOD*0.001 * SYS_FREQ);
   refreshDisplayKeyboard.registerCallback(refreshDisplayKeyboardRoutine);
 
   // MINUTES AND HOURS
-  Timer minuteTickDownwards(&mainClock_us_temp, 20000); // CHANGE TO (&mainClock_seconds, 60) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  Timer minuteTickDownwards(&sysClk, 2000); // CHANGE TO (&mainClock_seconds, 60) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   minuteTickDownwards.registerCallback(minuteTickDownwardsRoutine);
 
-  Timer debugTimer(&mainClock_us_temp, 200000);
+  Timer debugTimer(&sysClk, 2*SYS_FREQ);
   debugTimer.registerCallback(debugRoutine);
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
@@ -199,7 +205,8 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   {
     ATOMIC_BLOCK(ATOMIC_FORCEON)
     {
-      mainClock_us_temp = mainClock_us;
+      //mainClock_us_temp = mainClock_us;
+      sysClk = sysClkMaster;
     }
     beeper.beep();
 
@@ -210,7 +217,7 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
       aeration.outputLow();
       pump.outputLow();
       display.prepareDots(0x0);
-      if (mainClock_us_temp > 95000)
+      if (sysClk > 9500)
       {
         mainProgramState.recoverFromPowerLoss();
       }

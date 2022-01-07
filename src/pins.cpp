@@ -79,26 +79,26 @@ volatile uint8_t *Pin::getPin()
   return pPin;
 }
 
-void Beeper::setBeep(uint32_t startTime, uint32_t duration, uint8_t repeatCount, uint32_t pauseDuration)
+void Beeper::setBeep(uint16_t startTime, uint16_t duration, uint8_t repeatCount, uint16_t pauseDuration)
 {
   start = startTime;
-  end = startTime + duration / MAIN_CLOCK_TICK;
+  end = startTime + duration;
   repeat = repeatCount;
   if (pauseDuration)
-    pause = pauseDuration / MAIN_CLOCK_TICK;
+    pause = pauseDuration;
   else
-    pause = duration / MAIN_CLOCK_TICK;
+    pause = duration;
 }
 void Beeper::beep()
 {
   if (repeat)
   {
-    if ((mainClock_us_temp >= start) && (mainClock_us_temp < end) && ~(isActivated))
+    if ((sysClk >= start) && (sysClk < end) && ~(isActivated))
     {
       setOn();
       isActivated = true;
     }
-    if (((mainClock_us_temp < start) || (mainClock_us_temp > end)) && isActivated)
+    if (((sysClk < start) || (sysClk > end)) && isActivated)
     {
       setOff();
       isActivated = false;
@@ -114,11 +114,11 @@ void Beeper::beep()
 }
 void Beeper::beepOnce()
 {
-  setBeep(mainClock_us_temp + 10000, 50000);
+  setBeep(sysClk + 1000, 500);
 }
 void Beeper::beepTwice()
 {
-  setBeep(mainClock_us_temp + 10000, 50000, 2);
+  setBeep(sysClk + 1000, 500, 2);
 }
 void Beeper::setOn()
 {
@@ -130,11 +130,11 @@ void Beeper::setOff()
   // PORTD &= ~_BV(BEEPER);
   low_HiZ();
 }
-uint32_t Beeper::getStart()
+uint16_t Beeper::getStart()
 {
   return start;
 }
-uint32_t Beeper::getEnd()
+uint16_t Beeper::getEnd()
 {
   return end;
 }

@@ -1,8 +1,10 @@
 #include "globals.h"
 #include "parse.h"
 
-volatile uint32_t mainClock_us = 0; // Software counter incremented by timer interrupt
-uint32_t mainClock_us_temp = 0;
+//volatile uint32_t mainClock_us = 0; // Software counter incremented by timer interrupt
+//uint32_t mainClock_us_temp = 0;
+volatile uint16_t sysClkMaster;
+uint16_t sysClk;
 uint32_t mainClock_seconds = 0; // Software counter incremented every 1 second
 uint32_t tickAtLastSec = 0;     // Used in 1 second timer calculations
 int8_t minutesLeft = eeprom_read_byte(&savedMinutesLeft);
@@ -256,7 +258,7 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = changeTimerAeration;
             mainMenu.update();
-            beeper.setBeep(mainClock_us_temp + 10000, 500000);
+            beeper.setBeep(sysClk + 1000, 5000);
           },
           []()
           {
@@ -267,7 +269,7 @@ bool Menu::execute()
             eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState); // move to power loss routine
             eeprom_update_byte(&savedHoursLeft, (uint8_t)hoursLeft);                        // move to power loss routine
             eeprom_update_byte(&savedMinutesLeft, (uint8_t)minutesLeft);                    // move to power loss routine
-            beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
+            beeper.setBeep(sysClk + 1000, 5000, 4);
           });
 
       kbUp.registerCallback(
@@ -281,7 +283,7 @@ bool Menu::execute()
           []()
           { 
             eeprom_read_block((void *)mainProgramState.timer, (const void *)savedTimer, sizeof savedTimer);
-            beeper.setBeep(mainClock_us_temp + 10000, 500000, 2); });
+            beeper.setBeep(sysClk + 1000, 5000, 2); });
       kbDown.registerCallback(
           []()
           {
@@ -293,7 +295,7 @@ bool Menu::execute()
           []()
           { 
             eeprom_update_block( (const void *)mainProgramState.timer,(void *)savedTimer, sizeof savedTimer);
-            beeper.setBeep(mainClock_us_temp + 10000, 500000, 3); });
+            beeper.setBeep(sysClk + 1000, 5000, 3); });
       log("root level\n");
       break;
 
@@ -309,7 +311,7 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = rootLevel;
             mainMenu.update();
-            beeper.setBeep(mainClock_us_temp + 10000, 500000);
+            beeper.setBeep(sysClk + 1000, 5000);
           },
           []()
           {
@@ -317,7 +319,7 @@ bool Menu::execute()
           },
           []()
           {
-            beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
+            beeper.setBeep(sysClk + 1000, 5000, 4);
           });
       kbUp.registerCallback(
           []()
@@ -355,7 +357,7 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = rootLevel;
             mainMenu.update();
-            beeper.setBeep(mainClock_us_temp + 10000, 500000);
+            beeper.setBeep(sysClk + 1000, 5000);
           },
           []()
           {
@@ -363,7 +365,7 @@ bool Menu::execute()
           },
           []()
           {
-            beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
+            beeper.setBeep(sysClk + 1000, 5000, 4);
           });
       kbUp.registerCallback(
           []()
@@ -401,7 +403,7 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = rootLevel;
             mainMenu.update();
-            beeper.setBeep(mainClock_us_temp + 10000, 500000);
+            beeper.setBeep(sysClk + 1000, 5000);
           },
           []()
           {
@@ -409,7 +411,7 @@ bool Menu::execute()
           },
           []()
           {
-            beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
+            beeper.setBeep(sysClk + 1000, 5000, 4);
           });
       kbUp.registerCallback(
           []()
@@ -447,7 +449,7 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = rootLevel;
             mainMenu.update();
-            beeper.setBeep(mainClock_us_temp + 10000, 500000);
+            beeper.setBeep(sysClk + 1000, 5000);
           },
           []()
           {
@@ -455,7 +457,7 @@ bool Menu::execute()
           },
           []()
           {
-            beeper.setBeep(mainClock_us_temp + 10000, 500000, 4);
+            beeper.setBeep(sysClk + 1000, 5000, 4);
           });
       kbUp.registerCallback(
           []()
