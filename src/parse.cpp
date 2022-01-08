@@ -52,7 +52,7 @@ void parseCmdline(char *cmdLine)
       uartTransmitString(uartOutputString);
       */
       sprintf(uartOutputString, "sysClk= %u, uptime: %lu s\r\n",
-              sysClk, mainClock_seconds);
+              sysClk, clkSeconds32bit);
       uartTransmitString(uartOutputString);
     }
     else if (!strcmp(cmd, CMD_HELP))

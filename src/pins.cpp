@@ -114,11 +114,11 @@ void Beeper::beep()
 }
 void Beeper::beepOnce()
 {
-  setBeep(sysClk + 1000, 500);
+  setBeep(sysClk + 100*SYS_MILLISECONDS, 50*SYS_MILLISECONDS);
 }
 void Beeper::beepTwice()
 {
-  setBeep(sysClk + 1000, 500, 2);
+  setBeep(sysClk + 100*SYS_MILLISECONDS, 50*SYS_MILLISECONDS, 2);
 }
 void Beeper::setOn()
 {

@@ -1,12 +1,12 @@
 #include "globals.h"
 #include "parse.h"
 
-//volatile uint32_t mainClock_us = 0; // Software counter incremented by timer interrupt
-//uint32_t mainClock_us_temp = 0;
+// volatile uint32_t mainClock_us = 0; // Software counter incremented by timer interrupt
+// uint32_t mainClock_us_temp = 0;
 volatile uint16_t sysClkMaster;
 uint16_t sysClk;
-uint32_t mainClock_seconds = 0; // Software counter incremented every 1 second
-uint32_t tickAtLastSec = 0;     // Used in 1 second timer calculations
+uint32_t clkSeconds32bit = 0; // Software counter incremented every 1 second
+uint16_t clkSeconds16bit = 0;
 int8_t minutesLeft = eeprom_read_byte(&savedMinutesLeft);
 int8_t hoursLeft = eeprom_read_byte(&savedHoursLeft);
 
@@ -81,24 +81,28 @@ bool ProgramState::execute()
       pump.low_HiZ();
       // hoursLeft = timer[stateAeration][0];
       // minutesLeft = timer[stateAeration][1];
+      log("program state: aeration\n");
       break;
     case stateAfterAeration:
       aeration.low_HiZ();
       pump.low_HiZ();
       // hoursLeft = timer[stateAfterAeration][0];
       // minutesLeft = timer[stateAfterAeration][1];
+      log("program state: after aeration\n");
       break;
     case statePumping:
       aeration.low_HiZ();
       pump.high_PullUp();
       // hoursLeft = timer[statePumping][0];
       // minutesLeft = timer[statePumping][1];
+      log("program state: pumping\n");
       break;
     case stateAfterPumping:
       aeration.low_HiZ();
       pump.low_HiZ();
       // hoursLeft = timer[stateAfterPumping][0];
       // minutesLeft = timer[stateAfterPumping][1];
+      log("program state: after pumping\n");
       break;
 
     default:
@@ -130,6 +134,7 @@ void ProgramState::hold()
   {
     holdedState = currentState;
     currentState = stateHold;
+    log("program state holded\n");
   }
 }
 
@@ -139,8 +144,9 @@ void ProgramState::resume()
   if (currentState == stateHold)
   {
     if (holdedState == stateHold)
-      holdedState = stateAeration;                  //reset state in case of permanent state lock
+      holdedState = stateAeration; // reset state in case of permanent state lock
     currentState = holdedState;
+    log("program state resumed\n");
   }
 }
 
@@ -201,9 +207,15 @@ void ProgramState::previousState()
 bool ProgramState::isRunning()
 {
   if (currentState == stateHold)
+  {
+    // debugDiode.high_PullUp();
     return false;
+  }
   else
+  {
+    // debugDiode.low_HiZ();
     return true;
+  }
 }
 
 void ProgramState::transit()
@@ -225,7 +237,7 @@ Menu::Menu()
 }
 
 /**
- * @brief Increade timer
+ * @brief Increase timer
  *
  * @param pTimer pointer to timer to change
  * @param max max timer value (e.g. 60 - minutes, 24 - hours)
@@ -258,7 +270,7 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = changeTimerAeration;
             mainMenu.update();
-            beeper.setBeep(sysClk + 1000, 5000);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS);
           },
           []()
           {
@@ -269,7 +281,7 @@ bool Menu::execute()
             eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState); // move to power loss routine
             eeprom_update_byte(&savedHoursLeft, (uint8_t)hoursLeft);                        // move to power loss routine
             eeprom_update_byte(&savedMinutesLeft, (uint8_t)minutesLeft);                    // move to power loss routine
-            beeper.setBeep(sysClk + 1000, 5000, 4);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
           });
 
       kbUp.registerCallback(
@@ -283,7 +295,7 @@ bool Menu::execute()
           []()
           { 
             eeprom_read_block((void *)mainProgramState.timer, (const void *)savedTimer, sizeof savedTimer);
-            beeper.setBeep(sysClk + 1000, 5000, 2); });
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 2); });
       kbDown.registerCallback(
           []()
           {
@@ -295,7 +307,7 @@ bool Menu::execute()
           []()
           { 
             eeprom_update_block( (const void *)mainProgramState.timer,(void *)savedTimer, sizeof savedTimer);
-            beeper.setBeep(sysClk + 1000, 5000, 3); });
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 3); });
       log("root level\n");
       break;
 
@@ -311,7 +323,7 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = rootLevel;
             mainMenu.update();
-            beeper.setBeep(sysClk + 1000, 5000);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS);
           },
           []()
           {
@@ -319,7 +331,7 @@ bool Menu::execute()
           },
           []()
           {
-            beeper.setBeep(sysClk + 1000, 5000, 4);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
           });
       kbUp.registerCallback(
           []()
@@ -357,7 +369,7 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = rootLevel;
             mainMenu.update();
-            beeper.setBeep(sysClk + 1000, 5000);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS);
           },
           []()
           {
@@ -365,7 +377,7 @@ bool Menu::execute()
           },
           []()
           {
-            beeper.setBeep(sysClk + 1000, 5000, 4);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
           });
       kbUp.registerCallback(
           []()
@@ -403,7 +415,7 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = rootLevel;
             mainMenu.update();
-            beeper.setBeep(sysClk + 1000, 5000);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS);
           },
           []()
           {
@@ -411,7 +423,7 @@ bool Menu::execute()
           },
           []()
           {
-            beeper.setBeep(sysClk + 1000, 5000, 4);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
           });
       kbUp.registerCallback(
           []()
@@ -449,7 +461,7 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = rootLevel;
             mainMenu.update();
-            beeper.setBeep(sysClk + 1000, 5000);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS);
           },
           []()
           {
@@ -457,7 +469,7 @@ bool Menu::execute()
           },
           []()
           {
-            beeper.setBeep(sysClk + 1000, 5000, 4);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
           });
       kbUp.registerCallback(
           []()

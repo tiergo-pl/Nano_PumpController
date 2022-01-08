@@ -6,52 +6,19 @@
 
 #include "debug.h"
 
+
 //-----------------------------
 // macros and vars used in software clock
-// remember [extern] statement
-//#define MAIN_CLOCK_TICK 10             // 1 tick of mainClock_us duration in microseconds (max 128 due to hw limitations)
-#define SYS_FREQ 10000 // in Hz, must be divisor of 250000 
-
-//extern volatile uint32_t mainClock_us; // Software timer incremented by hw timer interrupt - System tick
-//extern uint32_t mainClock_us_temp;     // Copy of sw timer used in time calculations
+#define SYS_FREQ 1000 // in Hz, must be divisor of 250000
+#define SYS_MILLISECONDS (SYS_FREQ/1000)
 extern volatile uint16_t sysClkMaster;
 extern uint16_t sysClk;
-extern uint32_t mainClock_seconds;     // Software counter incremented every 1 second
-extern uint32_t tickAtLastSec;         // Used in 1 second timer calculations
+extern uint32_t clkSeconds32bit; // Software counter incremented every 1 second
+extern uint16_t clkSeconds16bit;
 extern int8_t minutesLeft;
 extern int8_t hoursLeft;
 
-/*extern volatile uint32_t clk1;
-extern volatile uint32_t clk2;
-extern volatile uint32_t clk3;
-extern volatile uint32_t clkBuzzer; // buzzer tone generation
-*/
-// set following values in microsecs.:
-//#define interval1 500000 / MAIN_CLOCK_TICK     //use macro for constant OR:
-// uint32_t interval1 = 500000 / MAIN_CLOCK_TICK; //use variable for mutable value OR:
-/*extern volatile uint32_t interval1; // use variable for mutable value readable from eeprom
-extern uint32_t *saved_interval1;   // and pointer to its saved value
-//#define interval2 1000000 / MAIN_CLOCK_TICK
-//#define interval3 55500 / MAIN_CLOCK_TICK
-extern volatile uint32_t interval2;      // use variable for mutable value readable from eeprom
-extern uint32_t *saved_interval2;        // and pointer to its saved value
-extern volatile uint32_t interval3;      // use variable for mutable value readable from eeprom
-extern uint32_t *saved_interval3;        // and pointer to its saved value
-extern volatile uint32_t intervalBuzzer; // buzzer tone generation
-extern uint32_t *saved_intervalBuzzer;
-*/
-/* not used - to delete in future
-#define SEQUENCE1_SIZE 0x60
-#define SEQUENCE2_SIZE 0x60
-extern uint8_t sequence1[SEQUENCE1_SIZE]; // array of pwm walues
-extern uint8_t *saved_sequence1;          //pointer to array of pwm values in eeprom
-extern uint8_t sequence2[SEQUENCE2_SIZE]; // array of pwm walues
-extern uint8_t *saved_sequence2;          //pointer to array of pwm values in eeprom
 
-#define DISPLAY_SEQ_SIZE 0x200
-extern uint8_t displaySeq[DISPLAY_SEQ_SIZE + 1];
-extern uint8_t *saved_displaySeq;
-*/
 extern bool consoleDebugOn;
 extern char debugString[120];
 

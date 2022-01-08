@@ -24,7 +24,7 @@ void timerInit(void)
 #if F_CPU == 8000000L
   TCCR2B = ((0 << CS22) | (1 << CS21) | (1 << CS20)); // prescaler clk/32 - 8 MHz clock
 #endif
-  OCR2A = (250000 / SYS_FREQ - 1); // count to 250000/SYS_FREQ (divide prescaled freq by 250000/SYS_FREQ)
+  OCR2A = (250000 / SYS_FREQ - 1); // count to 250000/SYS_FREQ (divide prescaled freq by 250000/SYS_FREQ), max value is 255!
   TIMSK2 = (1 << OCIE2A);          // Timer/Counter Interrupt Mask
 }
 
@@ -58,7 +58,7 @@ ISR(ADC_vect)
 ISR(TIMER2_COMPA_vect) // TIMER2 interrupt
 {
   //  PORTC |= _BV(debugPin1);
-  //mainClock_us++;
+  // mainClock_us++;
   sysClkMaster++;
   //  PORTC &= ~_BV(debugPin1);
 }
@@ -133,10 +133,10 @@ void minuteTickDownwardsRoutine()
 void debugRoutine()
 {
   sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
-          mainClock_seconds, pump.getPort(), *pump.getPort(), pump.getDdr(), *pump.getDdr(), pump.getPin(), *pump.getPin());
+          clkSeconds32bit, pump.getPort(), *pump.getPort(), pump.getDdr(), *pump.getDdr(), pump.getPin(), *pump.getPin());
   uartTransmitString(debugString);
   sprintf(debugString, "uptime: %lus, PORT_addr %p PORT=%x, DDR_addr %p DDR=%x, PIN_addr %p PIN=%x\n",
-          mainClock_seconds, kbMenu.getPort(), *kbMenu.getPort(), kbMenu.getDdr(), *kbMenu.getDdr(), kbMenu.getPin(), *kbMenu.getPin());
+          clkSeconds32bit, kbMenu.getPort(), *kbMenu.getPort(), kbMenu.getDdr(), *kbMenu.getDdr(), kbMenu.getPin(), *kbMenu.getPin());
   uartTransmitString(debugString);
 }
 void consoleInput()
@@ -172,7 +172,7 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   eeprom_read_block(sequence2, saved_sequence2, SEQUENCE2_SIZE);
   */
 
-  beeper.setBeep(0, 5000); // initial beep on system start
+  beeper.setBeep(0, 800 * SYS_MILLISECONDS); // initial beep on system start
 
   // Initial display test
   display.prepareSegments(dispContent);
@@ -183,20 +183,21 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   Timer oneSecondTick(&sysClk, 1 * SYS_FREQ);
   oneSecondTick.registerCallback(
       []()
-      { mainClock_seconds++; }); // Lambda function wrapper - gives pointer to function
+      { clkSeconds32bit++;
+      clkSeconds16bit= (uint16_t)clkSeconds32bit; }); // Lambda function wrapper - gives pointer to function
 
   // Prepare half second timer
-  Timer halfSecondTick(&sysClk, 0.5*SYS_FREQ);
+  Timer halfSecondTick(&sysClk, 0.5 * SYS_FREQ);
   halfSecondTick.registerCallback(halfSecondRoutine);
 
-  Timer refreshDisplayKeyboard(&sysClk, KB_REFRESH_PERIOD*0.001 * SYS_FREQ);
+  Timer refreshDisplayKeyboard(&sysClk, (KB_REFRESH_PERIOD * 0.001 * SYS_FREQ));
   refreshDisplayKeyboard.registerCallback(refreshDisplayKeyboardRoutine);
 
   // MINUTES AND HOURS
-  Timer minuteTickDownwards(&sysClk, 2000); // CHANGE TO (&mainClock_seconds, 60) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  Timer minuteTickDownwards(&clkSeconds16bit, 2); // CHANGE TO (&clkSeconds32bit, 60) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   minuteTickDownwards.registerCallback(minuteTickDownwardsRoutine);
 
-  Timer debugTimer(&sysClk, 2*SYS_FREQ);
+  Timer debugTimer(&sysClk, 2 * SYS_FREQ);
   debugTimer.registerCallback(debugRoutine);
   // MAIN PROGRAM LOOP
   // MAIN PROGRAM LOOP
@@ -205,21 +206,22 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
   {
     ATOMIC_BLOCK(ATOMIC_FORCEON)
     {
-      //mainClock_us_temp = mainClock_us;
+      // mainClock_us_temp = mainClock_us;
       sysClk = sysClkMaster;
     }
     beeper.beep();
 
     // reset output states after initial test
-    if (!beeper.isOn() && mainClock_seconds == 0)
+    if (!beeper.isOn() && clkSeconds32bit == 0)
     {
-      display.prepareSegments(display.toBcd(mainClock_seconds, dispContent));
+      display.prepareSegments(display.toBcd(clkSeconds32bit, dispContent));
       aeration.outputLow();
       pump.outputLow();
       display.prepareDots(0x0);
       if (sysClk > 9500)
       {
         mainProgramState.recoverFromPowerLoss();
+        mainProgramState.update();
       }
     }
     else
@@ -232,6 +234,10 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
     oneSecondTick.execute(); // increment every second
 
     minuteTickDownwards.execute(mainProgramState.isRunning());
+#ifdef DEBUG
+    debugDiode.toggle();
+#endif
+
     display.execute();
     halfSecondTick.execute();
 
