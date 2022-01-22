@@ -40,7 +40,7 @@ void portInit(void)
   kbMenu.inputPullUp();
   kbUp.inputPullUp();
   kbDown.inputPullUp();
-  debugDiode.outputHigh();
+  debugDiode.outputLow();
 }
 
 void adcInit()
@@ -209,7 +209,15 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
       // mainClock_us_temp = mainClock_us;
       sysClk = sysClkMaster;
     }
+#ifdef DEBUG //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+    debugDiode.high_PullUp();
+    debugDiode.low_HiZ();
+#endif
     beeper.beep();
+#ifdef DEBUG //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+    debugDiode.high_PullUp();
+    debugDiode.low_HiZ();
+#endif
 
     // reset output states after initial test
     if (!beeper.isOn() && clkSeconds32bit == 0)
@@ -230,20 +238,43 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
       mainProgramState.execute();
       mainMenu.execute();
     }
+#ifdef DEBUG //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+    debugDiode.high_PullUp();
+    debugDiode.low_HiZ();
+#endif
 
     oneSecondTick.execute(); // increment every second
+#ifdef DEBUG                 //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+    debugDiode.high_PullUp();
+    debugDiode.low_HiZ();
+#endif
 
     minuteTickDownwards.execute(mainProgramState.isRunning());
-#ifdef DEBUG
-    debugDiode.toggle();
+#ifdef DEBUG //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+    debugDiode.high_PullUp();
+    debugDiode.low_HiZ();
 #endif
 
     display.execute();
+#ifdef DEBUG //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+    debugDiode.high_PullUp();
+    debugDiode.low_HiZ();
+#endif
     halfSecondTick.execute();
 
+#ifdef DEBUG //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+    debugDiode.high_PullUp();
+    debugDiode.low_HiZ();
+#endif
     if (consoleDebugOn)
       debugTimer.execute();
 
     consoleInput();
+#ifdef DEBUG //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+    debugDiode.high_PullUp();
+    debugDiode.low_HiZ();
+    debugDiode.high_PullUp();
+    debugDiode.low_HiZ();
+#endif
   }
 }

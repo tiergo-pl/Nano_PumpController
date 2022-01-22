@@ -10,20 +10,6 @@ uint16_t clkSeconds16bit = 0;
 int8_t minutesLeft = eeprom_read_byte(&savedMinutesLeft);
 int8_t hoursLeft = eeprom_read_byte(&savedHoursLeft);
 
-/*volatile uint32_t clk1 = 0;
-volatile uint32_t clk2 = 0;
-volatile uint32_t clk3 = 0;
-volatile uint32_t interval1;
-uint32_t *saved_interval1 = (uint32_t *)0;
-volatile uint32_t interval2;
-uint32_t *saved_interval2 = (uint32_t *)4;
-volatile uint32_t interval3;
-uint32_t *saved_interval3 ;
-
-volatile uint32_t clkBuzzer;
-volatile uint32_t intervalBuzzer;
-uint32_t *saved_intervalBuzzer = (uint32_t *)12;
-*/
 bool consoleDebugOn = false;
 char debugString[];
 
@@ -41,18 +27,13 @@ Key kbUp(&KB_UP);
 Key kbDown(&KB_DOWN);
 Pin debugDiode(&PORTD, 7);
 
-// needed function wrappers
-/*void debugDiode_toggle()
-{
-  debugDiode.toggle();
-}*/
 
 ProgramState mainProgramState;
 Menu mainMenu;
 //--------------------------------------------------------------------------
 void log(const char *text)
 {
-#ifdef DEBUG
+#ifdef DEBUG //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
   uartTransmitString(text);
 #endif
 }
