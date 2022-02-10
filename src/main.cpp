@@ -31,7 +31,9 @@ void timerInit(void)
 void portInit(void)
 {
   // DDRB = (1 << LED_BUILTIN) | _BV(debugPin3); // Led builtin (13)
-  // DDRC = (1 << debugPin0) | (1 << debugPin1) | (1 << debugPin2) | _BV(Buzzer);
+  DDRC &= ~_BV(PLOSS_DETECT);
+  PORTC |= _BV(PLOSS_DETECT);
+  DDRB |= _BV(DEBUG_DIODE_2);
   // DDRD = ((1 << BEEPER));
   beeper.outputLow();
   ledBuiltin.outputLow();
@@ -41,18 +43,18 @@ void portInit(void)
   kbUp.inputPullUp();
   kbDown.inputPullUp();
   debugDiode.outputLow();
+
 }
 
-void adcInit()
+void pcintInit()
 {
-  ADMUX = 0x67; // Vref = Vcc,ADLAR=1 ,ADC7
-  ADCSRA = 7;   // prescaler /128
-  ADCSRA |= _BV(ADEN) | _BV(ADIE) | _BV(ADSC);
-}
+  PCMSK1 = _BV(PLOSS_DETECT);
+  PCICR = _BV(PCIE1);
+} 
 
-ISR(ADC_vect)
+ISR(PCINT1_vect)  // interrupt from power loss detection pin
 {
-  ADCSRA |= _BV(ADSC);
+  PINB |= _BV(DEBUG_DIODE_2);
 }
 
 ISR(TIMER2_COMPA_vect) // TIMER2 interrupt
@@ -160,6 +162,7 @@ int main()
   timerInit();
   portInit();
   uartInit();
+  pcintInit();
   sei();
   /*
   interval1 = eeprom_read_dword(saved_interval1);

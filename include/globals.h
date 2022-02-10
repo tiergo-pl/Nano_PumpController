@@ -39,6 +39,8 @@ extern char cmdLine[64];
 
 #define DISP_CLK PORTD, 2
 #define DISP_DIO PORTD, 3
+
+#define PLOSS_DETECT PCINT8 // = PC0
 #else
 #define LED_BUILTIN PORTB, PB5
 #define AERATION PORTD, PD2
@@ -51,6 +53,9 @@ extern char cmdLine[64];
 
 #define DISP_CLK PORTD, 5
 #define DISP_DIO PORTD, 6
+
+#define PLOSS_DETECT PCINT8 // = PC0
+#define DEBUG_DIODE_2 PB4
 #endif
 
 #define KB_REFRESH_PERIOD 40            // in miliseconds
