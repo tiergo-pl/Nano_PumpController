@@ -32,7 +32,7 @@ void portInit(void)
 {
   // DDRB = (1 << LED_BUILTIN) | _BV(debugPin3); // Led builtin (13)
   DDRC &= ~_BV(PLOSS_DETECT);
-  PORTC |= _BV(PLOSS_DETECT);
+  //PORTC |= _BV(PLOSS_DETECT);
   DDRB |= _BV(DEBUG_DIODE_2);
   // DDRD = ((1 << BEEPER));
   beeper.outputLow();
@@ -54,7 +54,15 @@ void pcintInit()
 
 ISR(PCINT1_vect)  // interrupt from power loss detection pin
 {
-  PINB |= _BV(DEBUG_DIODE_2);
+  PORTB |= _BV(DEBUG_DIODE_2);
+  eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState); 
+  eeprom_update_byte(&savedHoursLeft, (uint8_t)hoursLeft);                        
+  eeprom_update_byte(&savedMinutesLeft, (uint8_t)minutesLeft);                    
+  eeprom_busy_wait();
+  PORTB &= ~_BV(DEBUG_DIODE_2);
+  beeper.setOn();
+  _delay_ms(5000);
+  beeper.setOff();
 }
 
 ISR(TIMER2_COMPA_vect) // TIMER2 interrupt
@@ -164,18 +172,10 @@ int main()
   uartInit();
   pcintInit();
   sei();
-  /*
-  interval1 = eeprom_read_dword(saved_interval1);
-  interval2 = eeprom_read_dword(saved_interval2);
-  interval3 = eeprom_read_dword(saved_interval3);
-  intervalBuzzer = eeprom_read_dword(saved_intervalBuzzer);
-  */
-  /* not used - to delete in future
-eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
-  eeprom_read_block(sequence2, saved_sequence2, SEQUENCE2_SIZE);
-  */
 
-  beeper.setBeep(0, 800 * SYS_MILLISECONDS); // initial beep on system start
+
+
+  beeper.setBeep(0, 500 * SYS_MILLISECONDS); // initial beep on system start
 
   // Initial display test
   display.prepareSegments(dispContent);
@@ -229,10 +229,10 @@ eeprom_read_block(sequence1, saved_sequence1, SEQUENCE1_SIZE);
       aeration.outputLow();
       pump.outputLow();
       display.prepareDots(0x0);
-      if (sysClk > 9500)
+      if (sysClk > 900*SYS_MILLISECONDS)
       {
         mainProgramState.recoverFromPowerLoss();
-        mainProgramState.update();
+        beeper.beepOnce();
       }
     }
     else

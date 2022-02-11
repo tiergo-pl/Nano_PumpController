@@ -27,7 +27,6 @@ Key kbUp(&KB_UP);
 Key kbDown(&KB_DOWN);
 Pin debugDiode(&PORTD, 7);
 
-
 ProgramState mainProgramState;
 Menu mainMenu;
 //--------------------------------------------------------------------------
@@ -90,8 +89,15 @@ bool ProgramState::execute()
       break;
     }
     // debugDiode.toggle();
-    hoursLeft = timer[currentState][0];
-    minutesLeft = timer[currentState][1];
+    if (!recoveryFromPowerLoss)
+    {
+      hoursLeft = timer[currentState][0];
+      minutesLeft = timer[currentState][1];
+    }
+    else
+    {
+      recoveryFromPowerLoss = false;
+    }
     toUpdate = false;
     return true;
   }
@@ -108,6 +114,8 @@ void ProgramState::recoverFromPowerLoss()
 {
   currentState = (State)eeprom_read_byte(&savedCurrentState);
   holdedState = (State)eeprom_read_byte(&savedHoldedState);
+  recoveryFromPowerLoss = true;
+  update();
 }
 void ProgramState::hold()
 {

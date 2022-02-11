@@ -107,6 +107,7 @@ private:
   State holdedState = stateAeration;
   bool transition = false;
   bool toUpdate = false;
+  bool recoveryFromPowerLoss = false;
 };
 
 class Menu
