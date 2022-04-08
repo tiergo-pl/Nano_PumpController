@@ -206,36 +206,7 @@ bool DisplayTM1637::execute()
     return false;
 }
 
-//for testing only
-//for testing only
-//for testing only
-//for testing only
-//for testing only
-//for testing only
-//for testing only
-//for testing only
-
-uint8_t Klasa::childClassTest()
+void DisplayTM1637::setBrightness(uint8_t brightness)
 {
-  return mDioPinNo;
-}
-
-uint8_t Klasa::getDioPinNo()
-{
-  return mDioPinNo;
-}
-
-int BaseClass::getBaseMember()
-{
-  return member;
-}
-
-int ChildClass::getMember()
-{
-  return member;
-}
-
-int ChildClass::getChildMember()
-{
-  return childMember;
+  mBrightness = brightness;
 }

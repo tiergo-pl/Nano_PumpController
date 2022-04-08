@@ -49,6 +49,8 @@ set CLK & DIO pins */
   //only for testing
   int classTest();
 
+  void setBrightness(uint8_t brightness);
+
 protected:
   volatile uint8_t *pClkPort;
   volatile uint8_t *pDioPort;
@@ -75,37 +77,6 @@ protected:
   bool sendByte(uint8_t dataByte);
 };
 
-//for testing only
-//for testing only
-//for testing only
-//for testing only
-//for testing only
-//for testing only
-//for testing only
-//for testing only
 
-class Klasa : public DisplayTM1637
-{
-public:
-  using DisplayTM1637::DisplayTM1637;
-  uint8_t getDioPinNo();
-  uint8_t childClassTest();
-};
-
-class BaseClass
-{
-protected:
-  int member;
-
-public:
-  int getBaseMember();
-};
-class ChildClass : public BaseClass
-{
-public:
-  int childMember;
-  int getMember();
-  int getChildMember();
-};
 
 #endif // !_display_TM1637_h_

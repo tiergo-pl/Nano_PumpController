@@ -32,8 +32,10 @@ void portInit(void)
 {
   // DDRB = (1 << LED_BUILTIN) | _BV(debugPin3); // Led builtin (13)
   DDRC &= ~_BV(PLOSS_DETECT);
-  //PORTC |= _BV(PLOSS_DETECT);
+  // PORTC |= _BV(PLOSS_DETECT);
+#ifdef DEBUG_DIODE_2
   DDRB |= _BV(DEBUG_DIODE_2);
+#endif
   // DDRD = ((1 << BEEPER));
   beeper.outputLow();
   ledBuiltin.outputLow();
@@ -43,23 +45,26 @@ void portInit(void)
   kbUp.inputPullUp();
   kbDown.inputPullUp();
   debugDiode.outputLow();
-
 }
 
 void pcintInit()
 {
   PCMSK1 = _BV(PLOSS_DETECT);
   PCICR = _BV(PCIE1);
-} 
+}
 
-ISR(PCINT1_vect)  // interrupt from power loss detection pin
+ISR(PCINT1_vect) // interrupt from power loss detection pin
 {
+#ifdef DEBUG_DIODE_2
   PORTB |= _BV(DEBUG_DIODE_2);
-  eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState); 
-  eeprom_update_byte(&savedHoursLeft, (uint8_t)hoursLeft);                        
-  eeprom_update_byte(&savedMinutesLeft, (uint8_t)minutesLeft);                    
+#endif
+  eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState);
+  eeprom_update_byte(&savedHoursLeft, (uint8_t)hoursLeft);
+  eeprom_update_byte(&savedMinutesLeft, (uint8_t)minutesLeft);
   eeprom_busy_wait();
+#ifdef DEBUG_DIODE_2
   PORTB &= ~_BV(DEBUG_DIODE_2);
+#endif
   beeper.setOn();
   _delay_ms(5000);
   beeper.setOff();
@@ -95,6 +100,15 @@ void halfSecondRoutine()
     display.prepareDots(0, 1, 1);
   else
     display.prepareDots(0x01, 1, 1);
+  if (mainMenu.getMenuLevel()) // true if menulevel != rootLevel
+  {
+    if (ledBuiltin.readOutput())
+      display.setBrightness(0x0f);
+    else
+      display.setBrightness(0x08);
+  }
+  else
+    display.setBrightness(0x0f);
   ledBuiltin.toggle();
 }
 
@@ -134,7 +148,11 @@ void minuteTickDownwardsRoutine()
   minutesLeft--;
   if (minutesLeft < 0)
   {
+#ifdef DEBUG
     minutesLeft = 11; // CHANGE THIS TO 59 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#else
+    minutesLeft = 59;
+#endif
     hoursLeft--;
     if (hoursLeft < 0)
       mainProgramState.transit();
@@ -173,8 +191,6 @@ int main()
   pcintInit();
   sei();
 
-
-
   beeper.setBeep(0, 500 * SYS_MILLISECONDS); // initial beep on system start
 
   // Initial display test
@@ -196,8 +212,12 @@ int main()
   Timer refreshDisplayKeyboard(&sysClk, (KB_REFRESH_PERIOD * 0.001 * SYS_FREQ));
   refreshDisplayKeyboard.registerCallback(refreshDisplayKeyboardRoutine);
 
-  // MINUTES AND HOURS
+// MINUTES AND HOURS
+#ifdef DEBUG
   Timer minuteTickDownwards(&clkSeconds16bit, 2); // CHANGE TO (&clkSeconds32bit, 60) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#else
+  Timer minuteTickDownwards(&clkSeconds16bit, 60);
+#endif
   minuteTickDownwards.registerCallback(minuteTickDownwardsRoutine);
 
   Timer debugTimer(&sysClk, 2 * SYS_FREQ);
@@ -229,7 +249,7 @@ int main()
       aeration.outputLow();
       pump.outputLow();
       display.prepareDots(0x0);
-      if (sysClk > 900*SYS_MILLISECONDS)
+      if (sysClk > 900 * SYS_MILLISECONDS)
       {
         mainProgramState.recoverFromPowerLoss();
         beeper.beepOnce();
