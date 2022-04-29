@@ -32,7 +32,7 @@ void portInit(void)
 {
   // DDRB = (1 << LED_BUILTIN) | _BV(debugPin3); // Led builtin (13)
   DDRC &= ~_BV(PLOSS_DETECT);
-  // PORTC |= _BV(PLOSS_DETECT);
+  PORTC |= _BV(PLOSS_DETECT);
 #ifdef DEBUG_DIODE_2
   DDRB |= _BV(DEBUG_DIODE_2);
 #endif
@@ -58,15 +58,23 @@ ISR(PCINT1_vect) // interrupt from power loss detection pin
 #ifdef DEBUG_DIODE_2
   PORTB |= _BV(DEBUG_DIODE_2);
 #endif
-  eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState);
-  eeprom_update_byte(&savedHoursLeft, (uint8_t)hoursLeft);
-  eeprom_update_byte(&savedMinutesLeft, (uint8_t)minutesLeft);
-  eeprom_busy_wait();
+  //_delay_us(200000);
+  if (~(PINC & _BV(PLOSS_DETECT)))
+  {
+    eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState);
+    eeprom_update_byte(&savedHoursLeft, (uint8_t)hoursLeft);
+    eeprom_update_byte(&savedMinutesLeft, (uint8_t)minutesLeft);
+    eeprom_busy_wait();
+    beeper.setOn();
+    _delay_ms(4000);
+    beeper.setOff();
+    _delay_ms(1000);
+  }
 #ifdef DEBUG_DIODE_2
   PORTB &= ~_BV(DEBUG_DIODE_2);
 #endif
   beeper.setOn();
-  _delay_ms(5000);
+  _delay_ms(2);
   beeper.setOff();
 }
 
@@ -188,7 +196,6 @@ int main()
   timerInit();
   portInit();
   uartInit();
-  pcintInit();
   sei();
 
   beeper.setBeep(0, 500 * SYS_MILLISECONDS); // initial beep on system start
@@ -253,6 +260,7 @@ int main()
       {
         mainProgramState.recoverFromPowerLoss();
         beeper.beepOnce();
+        pcintInit(); // enabling save on power loss
       }
     }
     else

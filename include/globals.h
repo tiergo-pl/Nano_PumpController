@@ -41,6 +41,7 @@ extern char cmdLine[64];
 #define DISP_DIO PORTD, 3
 
 #define PLOSS_DETECT PCINT8 // = PC0
+
 #else
 #define LED_BUILTIN PORTB, PB5
 #define AERATION PORTD, PD2
