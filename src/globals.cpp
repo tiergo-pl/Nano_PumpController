@@ -56,6 +56,7 @@ bool ProgramState::execute()
     }
     switch (currentState)
     {
+    default:
     case stateAeration:
       aeration.high_PullUp();
       pump.low_HiZ();
@@ -84,11 +85,7 @@ bool ProgramState::execute()
       // minutesLeft = timer[stateAfterPumping][1];
       log("program state: after pumping\n");
       break;
-
-    default:
-      break;
     }
-    // debugDiode.toggle();
     if (!recoveryFromPowerLoss)
     {
       hoursLeft = timer[currentState][0];
@@ -197,12 +194,10 @@ bool ProgramState::isRunning()
 {
   if (currentState == stateHold)
   {
-    // debugDiode.high_PullUp();
     return false;
   }
   else
   {
-    // debugDiode.low_HiZ();
     return true;
   }
 }
@@ -248,7 +243,8 @@ bool Menu::execute()
     switch (menuLevel)
     {
 
-    case rootLevel:
+    default:
+    case rootLevel: //**************************************************************************************************
       kbMenu.registerCallback(
           []()
           {
@@ -259,25 +255,20 @@ bool Menu::execute()
           {
             mainMenu.menuLevel = changeTimerAeration;
             mainMenu.update();
-            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS);
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 250 * SYS_MILLISECONDS);
           },
+          nullptr,
           []()
           {
-            debugDiode.toggle();
-          },
-          []()
-          {
-            eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState); // move to power loss routine
-            eeprom_update_byte(&savedHoursLeft, (uint8_t)hoursLeft);                        // move to power loss routine
-            eeprom_update_byte(&savedMinutesLeft, (uint8_t)minutesLeft);                    // move to power loss routine
-            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
+            mainMenu.menuLevel = keypadLocked;
+            mainMenu.update();
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 1000 * SYS_MILLISECONDS);
           });
 
       kbUp.registerCallback(
           []()
           {
             mainProgramState.previousState();
-            debugDiode.high_PullUp();
             beeper.beepOnce();
           },
           nullptr, nullptr,
@@ -289,7 +280,6 @@ bool Menu::execute()
           []()
           {
             mainProgramState.nextState();
-            debugDiode.low_HiZ();
             beeper.beepOnce();
           },
           nullptr, nullptr,
@@ -300,7 +290,7 @@ bool Menu::execute()
       log("root level\n");
       break;
 
-    case changeTimerAeration:
+    case changeTimerAeration: //**************************************************************************************************
       kbMenu.registerCallback(
           []()
           {
@@ -314,21 +304,17 @@ bool Menu::execute()
             mainMenu.update();
             beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS);
           },
-          []()
-          {
-            debugDiode.toggle();
-          },
-          []()
-          {
-            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
-          });
+          nullptr,
+          loadSaveDefaults);
+
       kbUp.registerCallback(
           []()
           {
             timerIncrease(&mainProgramState.timer[ProgramState::stateAeration][0], 96);
             beeper.beepOnce();
           },
-          nullptr, []()
+          nullptr,
+          []()
           {
             timerIncrease(&mainProgramState.timer[ProgramState::stateAeration][0], 96);
             beeper.beepOnce(); },
@@ -339,14 +325,15 @@ bool Menu::execute()
             timerIncrease(&mainProgramState.timer[ProgramState::stateAeration][1], 60);
             beeper.beepOnce();
           },
-          nullptr, []()
+          nullptr,
+          []()
           {
             timerIncrease(&mainProgramState.timer[ProgramState::stateAeration][1], 60);
             beeper.beepOnce(); },
           nullptr);
       log("changeTimerAeration\n");
       break;
-    case changeTimerAfterAeration:
+    case changeTimerAfterAeration: //**************************************************************************************************
       kbMenu.registerCallback(
           []()
           {
@@ -360,14 +347,8 @@ bool Menu::execute()
             mainMenu.update();
             beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS);
           },
-          []()
-          {
-            debugDiode.toggle();
-          },
-          []()
-          {
-            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
-          });
+          nullptr,
+          loadSaveDefaults);
       kbUp.registerCallback(
           []()
           {
@@ -392,7 +373,7 @@ bool Menu::execute()
           nullptr);
       log("changeTimerAfterAeration\n");
       break;
-    case changeTimerPumping:
+    case changeTimerPumping: //**************************************************************************************************
       kbMenu.registerCallback(
           []()
           {
@@ -406,14 +387,8 @@ bool Menu::execute()
             mainMenu.update();
             beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS);
           },
-          []()
-          {
-            debugDiode.toggle();
-          },
-          []()
-          {
-            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
-          });
+          nullptr,
+          loadSaveDefaults);
       kbUp.registerCallback(
           []()
           {
@@ -438,7 +413,7 @@ bool Menu::execute()
           nullptr);
       log("changeTimerPumping\n");
       break;
-    case changeTimerAfterPumping:
+    case changeTimerAfterPumping: //**************************************************************************************************
       kbMenu.registerCallback(
           []()
           {
@@ -452,14 +427,8 @@ bool Menu::execute()
             mainMenu.update();
             beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS);
           },
-          []()
-          {
-            debugDiode.toggle();
-          },
-          []()
-          {
-            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
-          });
+          nullptr,
+          loadSaveDefaults);
       kbUp.registerCallback(
           []()
           {
@@ -484,7 +453,45 @@ bool Menu::execute()
           nullptr);
       log("changeTimerAfterPumping\n");
       break;
-    default:
+    case keypadLocked: //**************************************************************************************************
+      kbMenu.registerCallback(
+          []()
+          {
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 50 * SYS_MILLISECONDS, 4, 100 * SYS_MILLISECONDS);
+          },
+          nullptr, nullptr,
+          []()
+          {
+            mainMenu.menuLevel = rootLevel;
+            mainMenu.update();
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 1000 * SYS_MILLISECONDS);
+          });
+
+      kbUp.registerCallback(
+          []()
+          {
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 50 * SYS_MILLISECONDS, 4, 100 * SYS_MILLISECONDS);
+          },
+          nullptr, nullptr,
+          []()
+          {
+            mainMenu.menuLevel = rootLevel;
+            mainMenu.update();
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 1000 * SYS_MILLISECONDS);
+          });
+      kbDown.registerCallback(
+          []()
+          {
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 50 * SYS_MILLISECONDS, 4, 100 * SYS_MILLISECONDS);
+          },
+          nullptr, nullptr,
+          []()
+          {
+            mainMenu.menuLevel = rootLevel;
+            mainMenu.update();
+            beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 1000 * SYS_MILLISECONDS);
+          });
+      log("keypad locked\n");
       break;
     }
     return true;
@@ -503,8 +510,19 @@ void Menu::update()
 
 // EEPROM variables =================================================================================
 
-int8_t EEMEM savedTimer[(int)ProgramState::stateAfterPumping + 1][2] = {{0, 0}, {1, 30}, {0, 40}, {0, 5}, {0, 1}}; // Defaults in eeprom
+int8_t EEMEM savedTimer[(int)ProgramState::stateAfterPumping + 1][2] = SAVED_TIMERS; // Defaults in eeprom
 uint8_t EEMEM savedCurrentState = (uint8_t)ProgramState::stateHold;
 uint8_t EEMEM savedHoldedState = (uint8_t)ProgramState::stateAeration; // Defaults in eeprom
 uint8_t EEMEM savedHoursLeft = 1;
 uint8_t EEMEM savedMinutesLeft = 11;
+
+// load defaults wrapper
+void loadSaveDefaults()
+{
+  int8_t temp[(int)ProgramState::stateAfterPumping + 1][2] = SAVED_TIMERS;
+  eeprom_write_block((const void *)temp, (void *)savedTimer, sizeof savedTimer);
+  eeprom_busy_wait();
+  eeprom_read_block((void *)mainProgramState.timer, (const void *)savedTimer, sizeof savedTimer);
+  eeprom_busy_wait();
+  beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
+}

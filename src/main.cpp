@@ -58,7 +58,6 @@ ISR(PCINT1_vect) // interrupt from power loss detection pin
 #ifdef DEBUG_DIODE_2
   PORTB |= _BV(DEBUG_DIODE_2);
 #endif
-  //_delay_us(200000);
   if (~(PINC & _BV(PLOSS_DETECT)))
   {
     eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState);
@@ -111,12 +110,15 @@ void halfSecondRoutine()
   if (mainMenu.getMenuLevel()) // true if menulevel != rootLevel
   {
     if (ledBuiltin.readOutput())
-      display.setBrightness(0x0f);
+    {
+      if (mainMenu.getMenuLevel() != Menu::MenuEntry::keypadLocked)
+        display.setBrightness(BRIGHTNESS_BLINK_HI); // Blinking higher brightness in settings change mode
+    }
     else
-      display.setBrightness(0x08);
+      display.setBrightness(BRIGHTNESS_BLINK_LO); // Brightness in keypad locked and blinking lower brightness in settings change mode
   }
   else
-    display.setBrightness(0x0f);
+    display.setBrightness(BRIGHTNESS); // Brightness in normal display mode
   ledBuiltin.toggle();
 }
 
@@ -125,7 +127,37 @@ void refreshDisplayKeyboardRoutine()
   kbMenu.execute();
   kbUp.execute();
   kbDown.execute();
-  if (mainMenu.getMenuLevel() == Menu::rootLevel)
+  switch (mainMenu.getMenuLevel())
+  {
+  default:
+  case Menu::rootLevel:
+  case Menu::keypadLocked:
+    display.prepareSegments(display.toBcd(minutesLeft, dispContent, 2), 2, 2); // displays current minute counter
+    display.prepareSegments(display.toBcd(hoursLeft, dispContent, 2), 2, 0);   // displays current hour counter
+    break;
+
+  case Menu::MenuEntry::changeTimerAeration:
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAeration][1], dispContent, 2), 2, 2); // displays set minute counter
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAeration][0], dispContent, 2), 2, 0); // displays set hour counter
+    break;
+
+  case Menu::MenuEntry::changeTimerAfterAeration:
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAfterAeration][1], dispContent, 2), 2, 2); // displays set minute counter
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAfterAeration][0], dispContent, 2), 2, 0); // displays set hour counter
+    break;
+
+  case Menu::MenuEntry::changeTimerPumping:
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::statePumping][1], dispContent, 2), 2, 2); // displays set minute counter
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::statePumping][0], dispContent, 2), 2, 0); // displays set hour counter
+    break;
+
+  case Menu::MenuEntry::changeTimerAfterPumping:
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAfterPumping][1], dispContent, 2), 2, 2); // displays set minute counter
+    display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAfterPumping][0], dispContent, 2), 2, 0); // displays set hour counter
+    break;
+  }
+  /*
+  if (mainMenu.getMenuLevel() == Menu::rootLevel || mainMenu.getMenuLevel() == Menu::keypadLocked)
   {
     display.prepareSegments(display.toBcd(minutesLeft, dispContent, 2), 2, 2); // displays current minute counter
     display.prepareSegments(display.toBcd(hoursLeft, dispContent, 2), 2, 0);   // displays current hour counter
@@ -150,6 +182,7 @@ void refreshDisplayKeyboardRoutine()
     display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAfterPumping][1], dispContent, 2), 2, 2); // displays set minute counter
     display.prepareSegments(display.toBcd(mainProgramState.timer[ProgramState::stateAfterPumping][0], dispContent, 2), 2, 0); // displays set hour counter
   }
+  */
 }
 void minuteTickDownwardsRoutine()
 {
@@ -157,7 +190,7 @@ void minuteTickDownwardsRoutine()
   if (minutesLeft < 0)
   {
 #ifdef DEBUG
-    minutesLeft = 11; // CHANGE THIS TO 59 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    minutesLeft = 19; // Quicker time flow (to debug)
 #else
     minutesLeft = 59;
 #endif
