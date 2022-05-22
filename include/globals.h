@@ -66,7 +66,7 @@ extern char cmdLine[64];
 #define SAVED_TIMERS {{0, 0}, {1, 30}, {0, 40}, {0, 5}, {0, 1}}
 #define BRIGHTNESS_BLINK_HI 0x0b // Blinking higher brightness in settings change mode (0X0f - max, 0x08 - min)
 #define BRIGHTNESS_BLINK_LO 0x0a // Brightness in keypad locked mode and blinking lower brightness in settings change mode
-#define BRIGHTNESS 0x0d // Brightness in normal display mode
+#define BRIGHTNESS 0x0e // Brightness in normal display mode
 
 //--------------------
 

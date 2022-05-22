@@ -524,5 +524,6 @@ void loadSaveDefaults()
   eeprom_busy_wait();
   eeprom_read_block((void *)mainProgramState.timer, (const void *)savedTimer, sizeof savedTimer);
   eeprom_busy_wait();
+  mainProgramState.start();
   beeper.setBeep(sysClk + 100 * SYS_MILLISECONDS, 500 * SYS_MILLISECONDS, 4);
 }
