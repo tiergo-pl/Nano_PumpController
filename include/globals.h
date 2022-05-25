@@ -108,6 +108,7 @@ private:
   bool transition = false;
   bool toUpdate = false;
   bool recoveryFromPowerLoss = false;
+  bool prevStateExecuted = false;
 };
 
 class Menu

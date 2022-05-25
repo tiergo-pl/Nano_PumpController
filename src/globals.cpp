@@ -33,6 +33,10 @@ Menu mainMenu;
 void log(const char *text)
 {
 #ifdef DEBUG //[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+  char uartOutputString[128];
+  sprintf(uartOutputString, "sysClk= %u, uptime: %lu s, ", sysClk, clkSeconds32bit);
+  uartTransmitString(uartOutputString);
+
   uartTransmitString(text);
 #endif
 }
@@ -60,42 +64,55 @@ bool ProgramState::execute()
     case stateAeration:
       aeration.high_PullUp();
       pump.low_HiZ();
-      // hoursLeft = timer[stateAeration][0];
-      // minutesLeft = timer[stateAeration][1];
-      log("program state: aeration\n");
+      log("program state: aeration (1)\n");
       break;
     case stateAfterAeration:
       aeration.low_HiZ();
       pump.low_HiZ();
-      // hoursLeft = timer[stateAfterAeration][0];
-      // minutesLeft = timer[stateAfterAeration][1];
-      log("program state: after aeration\n");
+      log("program state: after aeration (2)\n");
       break;
     case statePumping:
       aeration.low_HiZ();
       pump.high_PullUp();
-      // hoursLeft = timer[statePumping][0];
-      // minutesLeft = timer[statePumping][1];
-      log("program state: pumping\n");
+      log("program state: pumping (3)\n");
       break;
     case stateAfterPumping:
       aeration.low_HiZ();
       pump.low_HiZ();
-      // hoursLeft = timer[stateAfterPumping][0];
-      // minutesLeft = timer[stateAfterPumping][1];
-      log("program state: after pumping\n");
+      log("program state: after pumping (4)\n");
       break;
     }
+    toUpdate = false;
     if (!recoveryFromPowerLoss)
     {
       hoursLeft = timer[currentState][0];
-      minutesLeft = timer[currentState][1];
+      minutesLeft = timer[currentState][1] - 1;
+      if (minutesLeft < 0)
+      {
+        hoursLeft--;
+        minutesLeft = 59;
+        if (hoursLeft < 0)
+        {
+          if (prevStateExecuted)
+          {
+            previousState();
+          }
+          else
+          {
+            nextState();
+          }
+          log("omitting empty program state\n");
+        }
+        else
+        {
+          prevStateExecuted = false;
+        }
+      }
     }
     else
     {
       recoveryFromPowerLoss = false;
     }
-    toUpdate = false;
     return true;
   }
   else
@@ -146,6 +163,7 @@ void ProgramState::toggle()
 
 void ProgramState::nextState()
 {
+  prevStateExecuted = false;
   switch (currentState)
   {
   case stateAeration:
@@ -169,6 +187,7 @@ void ProgramState::nextState()
 
 void ProgramState::previousState()
 {
+  prevStateExecuted = true;
   switch (currentState)
   {
   case stateAeration:
