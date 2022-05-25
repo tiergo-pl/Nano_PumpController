@@ -61,6 +61,7 @@ ISR(PCINT1_vect) // interrupt from power loss detection pin
   if (~(PINC & _BV(PLOSS_DETECT)))
   {
     eeprom_update_byte(&savedCurrentState, (uint8_t)mainProgramState.currentState);
+    eeprom_update_byte(&savedHoldedState, (uint8_t)mainProgramState.holdedState);
     eeprom_update_byte(&savedHoursLeft, (uint8_t)hoursLeft);
     eeprom_update_byte(&savedMinutesLeft, (uint8_t)minutesLeft);
     eeprom_busy_wait();

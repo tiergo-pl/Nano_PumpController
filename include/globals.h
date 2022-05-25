@@ -63,7 +63,7 @@ extern char cmdLine[64];
 #define KB_LONG_PRESS_DURATION 500      // in miliseconds
 #define KB_VERYLONG_PRESS_DURATION 3000 // in miliseconds
 #define KB_BLOCK_DURATION 500           // in miliseconds
-#define SAVED_TIMERS {{0, 0}, {1, 30}, {0, 40}, {0, 5}, {0, 1}}
+#define SAVED_TIMERS {{0, 0}, {3, 0}, {1, 20}, {0, 10}, {0, 1}}
 #define BRIGHTNESS_BLINK_HI 0x0b // Blinking higher brightness in settings change mode (0X0f - max, 0x08 - min)
 #define BRIGHTNESS_BLINK_LO 0x0a // Brightness in keypad locked mode and blinking lower brightness in settings change mode
 #define BRIGHTNESS 0x0e // Brightness in normal display mode
@@ -102,9 +102,9 @@ public:
   void transit();
   void update();
   State currentState = stateHold;
+  State holdedState = stateAeration;
 
 private:
-  State holdedState = stateAeration;
   bool transition = false;
   bool toUpdate = false;
   bool recoveryFromPowerLoss = false;
