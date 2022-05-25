@@ -235,7 +235,7 @@ void ProgramState::update()
 //--------------------------------------------------------------------------
 Menu::Menu()
 {
-  menuLevel = rootLevel;
+  menuLevel = keypadLocked;
   toUpdate = true;
 }
 
